@@ -1,0 +1,1 @@
+/home/igors/bin/prep2cry.sh
