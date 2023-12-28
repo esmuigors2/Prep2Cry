@@ -89,17 +89,19 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
 
        cry1
      
-   Which prepares files machines.LINUX and nodes.par for a launch on a single node (containing the $HOSTNAME of present node
+   Which prepares files machines.LINUX and nodes.par for a launch on a single node (containing the $HOSTNAME of present node)
    By default it will use all the available threads/cores, but You can also specify this as an argument, e.g.
    
        cry1 20
        
    Usually there is no much gain to use more than 20 parallel processes, as it consumes too many resources for parallelization.
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
-7. Launch Your CRYSTAL job as usual:
+
+   **!! IMPORTANT !!** You **will** need to edit this file to change our local cluster name (lasc) to anything You have at home.
+8. Launch Your CRYSTAL job as usual:
 
        nohup runPcry23 20 INPUT_FILE_NAME &
 
-8. Enjoy!
+9. Enjoy!
 
 End and glory to God.
