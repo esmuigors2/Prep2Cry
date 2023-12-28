@@ -23,7 +23,7 @@ if [ "$(sed -n '/_atom_site_/,/^_geom/p' "$cifile" | wc -l)" -gt 2 ]; then
             grep -nm 1 $(echo "$unn" | gawk '{print $'"$(cat "${verytmpfille}0")"'}' | sed 's@[0-9+-]@@g') $HOME/.pertanu | cut -d : -f 1  | gawk '{printf "%-2s\n", $1}' >> "${tmpfille}.wyel"
         fi
         [ -n "$(echo "$un" | grep '^loop_')" ] && dcnt=0
-        [ -n "$(echo "$un" | grep '^loop_')" ] && [ -f "${verytmpfille}3" ] && rm ${verytmpfille}[0-3] && break
+        [ -n "$(echo "$un" | grep '^_\|^loop_')" ] && [ -f "${verytmpfille}3" ] && rm ${verytmpfille}[0-3] && break
     done # 2>&1 >/dev/null
 else
     echo "sorry pal, cannot find coordinates"
