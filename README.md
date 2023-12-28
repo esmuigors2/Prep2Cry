@@ -27,10 +27,10 @@ The scripts rely on three environmental variables:
         prep2cry.sh CIFNAME.cif
    
 This will return the first part of the pre2crys command, containing:
-      - -g : space group (number according to ITC)
-      - -l : lattice constant (currently only cubic structures are supported but the extension seems straightforward)
-      - -n : number of elements in the compound
-      - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates)
+- -g : space group (number according to ITC)
+- -l : lattice constant (currently only cubic structures are supported but the extension seems straightforward)
+- -n : number of elements in the compound
+- -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates)
       
 Like this:
 
@@ -44,10 +44,10 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
      
            pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" * -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12*
      
-   Here,
-       - -d option gives the DFA (density functional approximation) used, while
-       - -b specifies the basis set, as found under $CRYVAR_BSDIR/basis/Ca/pob_tzvp_2012.bas and $CRYVAR_BSDIR/basis/F/pob_tzvp_2012.bas .
-       - CaF2_tzvp2018_PBE0_opt.d12 is the name of input file You want to produce
+     Here,
+     - -d option gives the DFA (density functional approximation) used, while
+     - -b specifies the basis set, as found under $CRYVAR_BSDIR/basis/Ca/pob_tzvp_2012.bas and $CRYVAR_BSDIR/basis/F/pob_tzvp_2012.bas .
+     - CaF2_tzvp2018_PBE0_opt.d12 is the name of input file You want to produce
    * press `Enter` to launch this command
    * The script will ask for the comment to be put into the first line of the new input file. Please put something meaningful in here, to be able later to understand what in the world did You calcualte.
    * If left empty, it will produce the following:
@@ -58,7 +58,7 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
      
          fxnl2cry.sh PW1PW20hf
      
-     which will search for the definition of that funcionla inside $CRYVAR_FXLDIR/PW1PW20hf .
+     which will search for the definition of that density functional inside the file $CRYVAR_FXLDIR/PW1PW20hf.fxl .
 5. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets:
    * launch the following command:
      
