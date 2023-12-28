@@ -19,7 +19,7 @@ for un in $fxnls; do
         for lun in $lelm; do
             el=$(sed -n "${lun}p" $HOME/.pertanu)
             basfile="$CRYVAR_BSDIR/${el}/${eun}.bas"
-            if [ ! -f "$basfile" ] && [ ! -l "$basfile" ]; then
+            if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
                 printf "%$(tput cols)s" | tr ' ' '='; echo ""
                 echo "Cannot find the basis set file ${eun} for element ${el}!"
                 echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls "$CRYVAR_BSDIR/${el}" | xargs)\e[m"
