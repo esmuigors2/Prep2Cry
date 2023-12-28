@@ -2,9 +2,11 @@
 
 [ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$HOME/crydarba/tmpl/basis"
 [ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
+[ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl"
 
-fxnls=""; bases=""; pcryln=""; cmpd=""
+fxnls=""; bases=""; pcryln=""; cmpd=""; tmpln=""
 read -p "Please input the compound name:  " cmpd
+read -p "Please input the temlpate name:  " tmpln
 read -p "Please input all the functionals You want to use, separating names with a space:  " fxnls
 read -p "Please input all the basis sets You want to use, separating names with a space:  " bases
 read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
@@ -34,7 +36,7 @@ for un in $fxnls; do
         curn="${un}_${eun/_/}"
         mkdir "$curn"
         cd "$curn"
-        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" "${cmpd}_${curn}_opt.d12"
+        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" "${cmpd}_${curn}_${tmpln#tmpl_}.d12"
         cd ..
     done
 done

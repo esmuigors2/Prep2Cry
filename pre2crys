@@ -4,8 +4,8 @@
 [ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$$HOME/crydarba/tmpl/basis"
 [ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
 
-comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""; helpme=false
-while getopts "hc:g:l:n:w:b:d:" myopts; do
+comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""; template=""; helpme=false
+while getopts "hc:g:l:n:w:b:d:t:" myopts; do
     case $myopts in
     c) comment="$OPTARG"; ;;
     g) spcgrp="$OPTARG"; ;;
@@ -14,6 +14,7 @@ while getopts "hc:g:l:n:w:b:d:" myopts; do
     w) wypos="$OPTARG"; ;;
     d) dfa="$OPTARG"; ;;
     b) basis="$OPTARG"; ;;
+    t) template="$OPTARG"; ;;
     h) helpme=true;;
     \?) echo "Some specified options were not recognized. Try pre2crys -h for information about available options."; exit 1 ;; # for cases of "invented" options
     esac
@@ -23,7 +24,7 @@ outfile="${1%.d12}.d12"
 [ -z "$outfile" ] && helpme=true
 
 if ($helpme); then
-    echo -e "Usage: pre2crys [-c "COMMENT"] -g SPACEGROUP -l LATTICE_CONSTANT -n NUMBER_OF_ELEMENTS -w WYKOFF_POSITIONS_LINE -d DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE -b BASIS_SET_NAME INPUT_FILE_NAME\n\nIn WYKOFF_POSITIONS_LINE and DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE (if neccessary) the newlines should be replaced with hashes (#)."
+    echo -e "Usage: pre2crys [-c "COMMENT"] -g SPACEGROUP -l LATTICE_CONSTANT -n NUMBER_OF_ELEMENTS -w WYKOFF_POSITIONS_LINE -d DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE -b BASIS_SET_NAME -t TEMPLATE_NAME INPUT_FILE_NAME\n\nIn WYKOFF_POSITIONS_LINE and DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE (if neccessary) the newlines should be replaced with hashes (#)."
     echo -e "We also expect the following environmental variables to be non-empty:\n\tCRYVAR_TMPLDIR\t: where the template file is\n\tCRYVAR_BSDIR\t: where the basis sets are (grouped in folders for each element, e.g. folders Ca F K in which we have files TZVP.bas etc.)\n\tCRYVAR_FXLDIR\t: where non-standard functionals are (files like PW1PW20HF.fxl which contain lines defining them in input -- see CRYSTAL manual)"
     echo -e "If the comment is not given, it is prompted for; if the answer to that prompt is pressing 'Enter', the comment is made from the FILENAME + FUNCTIONAL + BASIS_SET"
     exit 0
@@ -32,8 +33,8 @@ fi
 [ -z "$comment" ] && read -p "Please enter the comment/human-readable info about this job:   " comment
 [ -z "$comment" ] && comment="${outfile%.d12} $dfa $basis"
 
-[ ! -f "$CRYVAR_TMPLDIR/tmpl.d12" ] && echo "Cannot find the template input file!" && exit 2
-cp $CRYVAR_TMPLDIR/tmpl.d12 "./${outfile}"
+[ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
+cp $CRYVAR_TMPLDIR/${template}.d12 "./${outfile}"
 mv "./${outfile}" "./${outfile}.tmp"
 
 ecpcheckf="/tmp/whetherecp.$$"
