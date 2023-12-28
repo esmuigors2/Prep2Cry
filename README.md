@@ -36,7 +36,7 @@ Like this:
 
       pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
       
-The Wyckoff positions are given in a single line where the hash substitutes for the newline.
+The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
 
 2. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
 3. If You only want to prepare a single file:
