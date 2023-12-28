@@ -12,6 +12,7 @@
 
 ## Where to place the scripts
 The scripts shold be in $HOME/bin or in any other directory You added to Your $PATH.
+
 Also, do not forget to place .pertanu under Your $HOME -- BOTH on the local machine and on the server.
 
 ## Environmental variables
