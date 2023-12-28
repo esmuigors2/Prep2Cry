@@ -44,7 +44,8 @@ done
 
 for un in $aselbas; do
     el="$(echo "$un" | cut -d : -f 1)"
-    bas="$(echo "$un" | cut -d : -f 2)"
-    rm "$CRYVAR_BSDIR/${el}/${bas}"
+    realbas="$(echo "$un" | cut -d : -f 2)"
+    fakebas="$(ls -l "$CRYVAR_BSDIR" | grep '^l' | grep "$realbas" | gawk '{print $NF}')"
+    rm "$CRYVAR_BSDIR/${el}/${fakebas}"
 done
 
