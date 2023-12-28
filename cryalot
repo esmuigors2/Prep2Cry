@@ -20,7 +20,7 @@ for un in $fxnls; do
             el=$(sed -n "${lun}p" $HOME/.pertanu)
             basfile="$CRYVAR_BSDIR/${el}/${eun}.bas"
             if [ ! -f "$basfile" ]; then
-                echo "Cannot find the basis set file ${basis} for element ${el}!"
+                echo "Cannot find the basis set file ${eun} for element ${el}!"
                 echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls "$CRYVAR_BSDIR/${el}" | xargs)\e[m"
                 read -p "Which of them should we use for this element? Paste the name here:  " selbas
                 [ -z "$selbas" ] && echo "Aborting." && exit 2
