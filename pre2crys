@@ -33,7 +33,7 @@ fi
 [ -z "$comment" ] && read -p "Please enter the comment/human-readable info about this job:   " comment
 [ -z "$comment" ] && comment="${outfile%.d12} $dfa $basis"
 
-[ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
+[ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && [ ! -L "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
 cp $CRYVAR_TMPLDIR/${template}.d12 "./${outfile}"
 mv "./${outfile}" "./${outfile}.tmp"
 
