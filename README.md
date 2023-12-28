@@ -21,6 +21,13 @@ The scripts rely on three environmental variables:
   2. CRYVAR_BSDIR -- the directory containing the directories with basis sets (if empty, defaults to $HOME/crydarba/tmpl/basis)
   3. CRYVAR_FXLDIR -- the directory containing the custom functionals, defined as they would be in the input file (if empty, defaults to $HOME/crydarba/tmpl/fxnls)
 
+You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust directory paths to Your situation, i.e., where did You extract those files to):
+
+     CRYVAR_TMPLDIR="$HOME/cryda/tmpl"
+     CRYVAR_BSDIR="$HOME/cryda/tmpl/basis"
+     CRYVAR_FXLDIR="$HOME/cryda/tmpl"
+     export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
+
 ## Usual workflow
 1. On the machine containing the CIF file launch:
    
