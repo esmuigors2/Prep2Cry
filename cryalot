@@ -1,0 +1,46 @@
+#!/bin/bash
+
+[ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$HOME/crydarba/tmpl/basis"
+[ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
+
+fxnls=""; bases=""; pcryln=""; cmpd=""
+read -p "Please input the compound name:  " cmpd
+read -p "Please input all the functionals You want to use, separating names with a space:  " fxnls
+read -p "Please input all the basis sets You want to use, separating names with a space:  " bases
+read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
+lelm="$(echo "$pcryln" | grep -o -e '-w ".*"' | sed 's@-w "@@;s@#"$@@;s@#@\n@g' | gawk '{print $1}')"
+#echo "$lelm"
+
+selbas=""; aselbas=""
+for un in $fxnls; do
+    for eun in $bases; do
+        for lun in $lelm; do
+            el=$(sed -n "${lun}p" $HOME/.pertanu)
+            basfile="$CRYVAR_BSDIR/${el}/${eun}.bas"
+            if [ ! -f "$basfile" ]; then
+                echo "Cannot find the basis set file ${basis} for element ${el}!"
+                echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls "$CRYVAR_BSDIR/${el}" | xargs)\e[m"
+                read -p "Which of them should we use for this element? Paste the name here:  " selbas
+                [ -z "$selbas" ] && echo "Aborting." && exit 2
+                aselbas="$aselbas ${el}:${selbas}"
+                ln -s $CRYVAR_BSDIR/${el}/${selbas} $CRYVAR_BSDIR/${el}/${eun}.bas
+            fi
+        done
+        if [ -f "${CRYVAR_FXLDIR}/${un}.fxl" ]; then
+            unn="$(fxnl2cry.sh ${un})"
+        else
+            unn="$un"
+        fi
+        curn="${un}_${eun/_/}"
+        mkdir "$curn"
+        cd "$curn"
+        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" "${cmpd}_${curn}_opt.d12"
+        cd ..
+    done
+done
+for un in $aselbas; do
+    el="$(echo "$aselbas" | cut -d : -f 1)"
+    bas="$(echo "$aselbas" | cut -d : -f 2)"
+    rm "$CRYVAR_BSDIR/${el}/${bas}"
+done
+

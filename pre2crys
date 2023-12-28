@@ -1,0 +1,87 @@
+#!/bin/bash
+
+[ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl"
+[ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$$HOME/crydarba/tmpl/basis"
+[ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
+
+comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""; helpme=false
+while getopts "hc:g:l:n:w:b:d:" myopts; do
+    case $myopts in
+    c) comment="$OPTARG"; ;;
+    g) spcgrp="$OPTARG"; ;;
+    l) latcon="$OPTARG"; ;;
+    n) numel="$OPTARG"; ;;
+    w) wypos="$OPTARG"; ;;
+    d) dfa="$OPTARG"; ;;
+    b) basis="$OPTARG"; ;;
+    h) helpme=true;;
+    \?) echo "Some specified options were not recognized. Try pre2crys -h for information about available options."; exit 1 ;; # for cases of "invented" options
+    esac
+done
+shift "$((OPTIND-1))"
+outfile="${1%.d12}.d12"
+[ -z "$outfile" ] && helpme=true
+
+if ($helpme); then
+    echo -e "Usage: pre2crys [-c "COMMENT"] -g SPACEGROUP -l LATTICE_CONSTANT -n NUMBER_OF_ELEMENTS -w WYKOFF_POSITIONS_LINE -d DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE -b BASIS_SET_NAME INPUT_FILE_NAME\n\nIn WYKOFF_POSITIONS_LINE and DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE (if neccessary) the newlines should be replaced with hashes (#)."
+    echo -e "We also expect the following environmental variables to be non-empty:\n\tCRYVAR_TMPLDIR\t: where the template file is\n\tCRYVAR_BSDIR\t: where the basis sets are (grouped in folders for each element, e.g. folders Ca F K in which we have files TZVP.bas etc.)\n\tCRYVAR_FXLDIR\t: where non-standard functionals are (files like PW1PW20HF.fxl which contain lines defining them in input -- see CRYSTAL manual)"
+    echo -e "If the comment is not given, it is prompted for; if the answer to that prompt is pressing 'Enter', the comment is made from the FILENAME + FUNCTIONAL + BASIS_SET"
+    exit 0
+fi
+
+[ -z "$comment" ] && read -p "Please enter the comment/human-readable info about this job:   " comment
+[ -z "$comment" ] && comment="${outfile%.d12} $dfa $basis"
+
+[ ! -f "$CRYVAR_TMPLDIR/tmpl.d12" ] && echo "Cannot find the template input file!" && exit 2
+cp $CRYVAR_TMPLDIR/tmpl.d12 "./${outfile}"
+mv "./${outfile}" "./${outfile}.tmp"
+
+ecpcheckf="/tmp/whetherecp.$$"
+sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
+echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
+    el=$(sed -n "${un}p" $HOME/.pertanu)
+    basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
+    if [ ! -f "$basfile" ]; then
+        echo "Cannot find the basis set file ${basis} for element ${el}!"
+        rm "./${outfile}.tmp" "./${outfile}"
+        break
+    else
+        cat "$basfile" >> "./${outfile}"
+        eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
+        if [ "${#eldef}" -gt 2 ] && [ "${eldef:0:1}" == "2" ]; then
+            echo "2" >> "$ecpcheckf" 
+        else
+            echo "0" >> "$ecpcheckf"
+        fi
+    fi
+done
+[ ! -f "./${outfile}" ] && exit 3
+wypos2="#${wypos%\#}"
+for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
+    if [ "$(sed -n "$yu"'p' "$ecpcheckf")" == "2" ]; then
+        wypos2="${wypos2/\#/%2}"
+    else
+        wypos2="${wypos2/\#/%}"
+    fi
+done
+rm "$ecpcheckf"
+#echo "$wypos2"
+wypos="${wypos2//%/#}"
+
+sed -n '/==BASIS/,$p' "./${outfile}.tmp" | sed '1d' >> "./${outfile}"
+rm "./${outfile}.tmp"
+sed -i '1s@==COMMENT@'"$comment"'@' "./${outfile}"
+sed -i 's@==GROUP@'"$spcgrp"'@' "./${outfile}"
+sed -i 's@==LATCON@'"$latcon"'@' "./${outfile}"
+sed -i 's@==NUMEL@'"$numel"'@' "./${outfile}"
+sed -i 's@==LISTWYKOFF@&'"${wypos#\#}"'@' "./${outfile}"
+sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
+
+sed -i '/==LISTWYKOFF/s@#@\n@g;s/==LISTWYKOFF//' "./${outfile}"
+sed -i '/==DFA/s@#@\n@g;s/==DFA//' "./${outfile}"
+
+#sed -i 's@@'"$"'@' "./${outfile}"
+
+
+#echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d'
+

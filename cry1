@@ -1,0 +1,5 @@
+#!/bin/bash
+
+[ -n "$1" ] && slotts="$1" || slotts=$(cat /proc/cpuinfo | grep -c vendor_id)
+echo -e "#\n${HOSTNAME/lasc/mpich} slots=${slotts}" > ./machines.LINUX
+echo "${HOSTNAME/lasc/mpich}" > ./nodes.par
