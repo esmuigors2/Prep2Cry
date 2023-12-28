@@ -30,7 +30,7 @@ for un in $fxnls; do
                 ln -s $CRYVAR_BSDIR/${el}/${selbas} $CRYVAR_BSDIR/${el}/${eun}.bas
             fi
         done
-        if [ -f "${CRYVAR_FXLDIR}/${un}.fxl" ]; then
+        if [ -f "${CRYVAR_FXLDIR}/${un}.fxl" ] || [ -L "${CRYVAR_FXLDIR}/${un}.fxl" ]; then
             unn="$(fxnl2cry.sh ${un})"
         else
             unn="$un"
