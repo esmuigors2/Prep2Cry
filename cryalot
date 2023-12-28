@@ -19,7 +19,8 @@ for un in $fxnls; do
         for lun in $lelm; do
             el=$(sed -n "${lun}p" $HOME/.pertanu)
             basfile="$CRYVAR_BSDIR/${el}/${eun}.bas"
-            if [ ! -f "$basfile" ]; then
+            if [ ! -f "$basfile" ] && [ ! -l "$basfile" ]; then
+                printf "%$(tput cols)s" | tr ' ' '='; echo ""
                 echo "Cannot find the basis set file ${eun} for element ${el}!"
                 echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls "$CRYVAR_BSDIR/${el}" | xargs)\e[m"
                 read -p "Which of them should we use for this element? Paste the name here:  " selbas
@@ -36,13 +37,14 @@ for un in $fxnls; do
         curn="${un}_${eun/_/}"
         mkdir "$curn"
         cd "$curn"
-        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" -t "$tmpln" "${cmpd}_${curn}_${tmpln#tmpl_}.d12"
+        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" -t "$tmpln" -c "${cmpd} $dfa $basis ${tmpln#tmpl_} $aselbas" "${cmpd}_${curn}_${tmpln#tmpl_}.d12"
         cd ..
     done
 done
+
 for un in $aselbas; do
-    el="$(echo "$aselbas" | cut -d : -f 1)"
-    bas="$(echo "$aselbas" | cut -d : -f 2)"
+    el="$(echo "$un" | cut -d : -f 1)"
+    bas="$(echo "$un" | cut -d : -f 2)"
     rm "$CRYVAR_BSDIR/${el}/${bas}"
 done
 
