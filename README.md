@@ -77,15 +77,19 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
      
                PBE0 B3LYP PW1PW20hf
           
-          In this example, PBE0 and B3LYP are standard functionals (having a keyword in CRYSTAL)
-          But PW1PW20hf is a custom-defined functional, which means it must have a file under $CRYVAR_FXLDIR , like $CRYVAR_FXLDIR/PW1PW20hf.fxl
+          In this example, PBE0 and B3LYP are standard functionals (having a keyword in CRYSTAL).
+          
+          But PW1PW20hf is a custom-defined functional, which means it must have a file under $CRYVAR_FXLDIR , like $CRYVAR_FXLDIR/PW1PW20hf.fxl .
+          
           The script cryalot will automatically distinguish between the two (if a file is found, it will use that; otherwise it will asume CRYSTAL knows this functional).
        4. The list of all basis sets You want to use, separated by space; e.g.,
           
                pob_tzvp_2012 pob_tzvp_rev2
           
           All basis sets are assumed to be custom basis sets and sought for in the $CRYVAR_BSDIR directory. Please see the description for the preparation of a single input file.
+          
           If there is no such basis set under $CRYVAR_BSDIR/basis/$element_name , You will be prompted about which basis set to use instead.
+          
           If You just press `Enter` at this point, the script will abort, and no further input files will be prepared.
        6. The semi-finished line from prep2cry.sh, e.g.
           
@@ -96,12 +100,14 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
 
        cry1
      
-   Which prepares files machines.LINUX and nodes.par for a launch on a single node (containing the $HOSTNAME of present node)
+   Which prepares files machines.LINUX and nodes.par for a launch on a single node (containing the $HOSTNAME of present node).
+   
    By default it will use all the available threads/cores, but You can also specify this as an argument, e.g.
    
        cry1 20
        
    Usually there is no much gain to use more than 20 parallel processes, as it consumes too many resources for parallelization.
+   
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
 
    **!! IMPORTANT !!** You **will** need to edit this file to change our local cluster name (lasc) to anything You have at home.
