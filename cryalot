@@ -16,19 +16,21 @@ lelm="$(echo "$pcryln" | grep -o -e '-w ".*"' | sed 's@-w "@@;s@#"$@@;s@#@\n@g' 
 selbas=""; aselbas=""
 for un in $fxnls; do
     for eun in $bases; do
+        curselbas=""
         for lun in $lelm; do
             el=$(sed -n "${lun}p" $HOME/.pertanu)
             basfile="$CRYVAR_BSDIR/${el}/${eun}.bas"
             if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
                 printf "%$(tput cols)s" | tr ' ' '='; echo ""
-                echo -e "Cannot find the basis set file \e[1m${eun}\e[m for element \e[1m${el}\e[m!"
-                echo -e "Found these basis sets for this element:\n   $(ls "$CRYVAR_BSDIR/${el}" | xargs | sed 's@\s\+@\e[44;97m&\e[m@')"
+                echo -e "Cannot find the basis set file \e[41;97m ${eun} \e[m for element \e[41;97m ${el} \e[m!"
+                echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls -l "$CRYVAR_BSDIR/${el}" | grep -v -e '^total' -e '^l' | gawk '{print $NF}' | xargs | sed 's@\s\+@\\e[m&\\e[44;97m@g')\e[m"
                 read -p "Which of them should we use for this element? Paste the name here:  " selbas
                 [ -z "$selbas" ] && echo "Aborting." && exit 2
                 selbas="${selbas%.bas}.bas"
                 aselbas="$aselbas ${el}:${selbas}"
                 ln -s $CRYVAR_BSDIR/${el}/${selbas} $CRYVAR_BSDIR/${el}/${eun}.bas
             fi
+            [ -L "$CRYVAR_BSDIR/${el}/${eun}.bas" ] && curselbas="$curselbas ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}" | grep '^l' | grep "$selbas" | gawk '{print $NF}'))"
         done
         if [ -f "${CRYVAR_FXLDIR}/${un}.fxl" ] || [ -L "${CRYVAR_FXLDIR}/${un}.fxl" ]; then
             unn="$(fxnl2cry.sh ${un})"
@@ -38,7 +40,7 @@ for un in $fxnls; do
         curn="${un}_${eun/_/}"
         mkdir "$curn"
         cd "$curn"
-        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" -t "$tmpln" -c "${cmpd} $dfa $basis ${tmpln#tmpl_} $aselbas" "${cmpd}_${curn}_${tmpln#tmpl_}.d12"
+        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" -t "$tmpln" -c "\"${cmpd} $un $eun ${tmpln#tmpl_} $curselbas\"" "${cmpd}_${curn}_${tmpln#tmpl_}.d12"
         cd ..
     done
 done
@@ -46,7 +48,7 @@ done
 for un in $aselbas; do
     el="$(echo "$un" | cut -d : -f 1)"
     realbas="$(echo "$un" | cut -d : -f 2)"
-    fakebas="$(ls -l "$CRYVAR_BSDIR" | grep '^l' | grep "$realbas" | gawk '{print $NF}')"
+    fakebas="$(ls -l "$CRYVAR_BSDIR/${el}" | grep '^l' | grep "$realbas" | cut -d '>' -f 1 | sed 's@ -$@@' | gawk '{print $NF}')"
     rm "$CRYVAR_BSDIR/${el}/${fakebas}"
 done
 

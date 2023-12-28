@@ -1,7 +1,7 @@
 #!/bin/bash
 
 [ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl"
-[ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$$HOME/crydarba/tmpl/basis"
+[ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$HOME/crydarba/tmpl/basis"
 [ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
 
 comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""; template=""; helpme=false
@@ -13,8 +13,8 @@ while getopts "hc:g:l:n:w:b:d:t:" myopts; do
     n) numel="$OPTARG"; ;;
     w) wypos="$OPTARG"; ;;
     d) dfa="$OPTARG"; ;;
-    b) basis="$OPTARG"; ;;
-    t) template="$OPTARG"; ;;
+    b) basis="${OPTARG%.bas}"; ;;
+    t) template="${OPTARG%.d12}"; ;;
     h) helpme=true;;
     \?) echo "Some specified options were not recognized. Try pre2crys -h for information about available options."; exit 1 ;; # for cases of "invented" options
     esac
@@ -43,7 +43,8 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     el=$(sed -n "${un}p" $HOME/.pertanu)
     basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
     if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
-        echo "Cannot find the basis set file ${basis} for element ${el}!"
+        #ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas"
+        echo -e "! Cannot find the basis set file \e[41;97m${basis}\e[m for element \e[41;97m${el}\e[m!"
         rm "./${outfile}.tmp" "./${outfile}"
         break
     else
