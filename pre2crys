@@ -42,7 +42,7 @@ sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
 echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
     el=$(sed -n "${un}p" $HOME/.pertanu)
     basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
-    if [ ! -f "$basfile" ]; then
+    if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
         echo "Cannot find the basis set file ${basis} for element ${el}!"
         rm "./${outfile}.tmp" "./${outfile}"
         break
