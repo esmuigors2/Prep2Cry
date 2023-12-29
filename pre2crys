@@ -38,6 +38,7 @@ cp $CRYVAR_TMPLDIR/${template}.d12 "./${outfile}"
 mv "./${outfile}" "./${outfile}.tmp"
 
 ecpcheckf="/tmp/whetherecp.$$"
+curselbasf="/tmp/curselbas.$$"
 sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
 curselbas=""
 echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
@@ -57,7 +58,7 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
         selbas="${selbas%.bas}.bas"
         ln -s $CRYVAR_BSDIR/${el}/${selbas} $CRYVAR_BSDIR/${el}/${basis}.bas
     fi
-    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$curselbas ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
+    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$(cat "$curselbasf" | xargs) ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo "Basis ${el}:${basis} is a link to ${el}:${curselbas}"
     cat "$basfile" >> "./${outfile}"
     eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
@@ -66,7 +67,11 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     else
         echo "0" >> "$ecpcheckf"
     fi
+    echo "$curselbas" > "$curselbasf"
 done
+curselbas="$(cat "$curselbasf" | xargs)"
+rm "$curselbasf"
+
 [ ! -f "./${outfile}" ] && exit 3
 wypos2="#${wypos%\#}"
 for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
@@ -92,4 +97,11 @@ sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
 sed -i '/==LISTWYKOFF/s@#@\n@g;s/==LISTWYKOFF//' "./${outfile}"
 sed -i '/==DFA/s@#@\n@g;s/==DFA//' "./${outfile}"
 
+
+for un in $curselbas; do
+    el="$(echo "$un" | cut -d : -f 1)"
+    realbas="$(echo "$un" | cut -d : -f 2)"
+    fakebas="$(ls -l "$CRYVAR_BSDIR/${el}" | grep '^l' | grep "$realbas" | cut -d '>' -f 1 | sed 's@ -$@@' | gawk '{print $NF}')"
+    rm "$CRYVAR_BSDIR/${el}/${fakebas}"
+done
 
