@@ -54,20 +54,27 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
      Here,
      - -d option gives the DFA (density functional approximation) used, while
      - -b specifies the basis set, as found under `$CRYVAR_BSDIR/basis/Ca/pob_tzvp_2012.bas` and `$CRYVAR_BSDIR/basis/F/pob_tzvp_2012.bas` .
+          
+       If there is no such basis set under `$CRYVAR_BSDIR/basis/$element_name` , You will be prompted about which basis set to use instead.
+          
+       If You just press `Enter` at this point, the script will abort, and the input file will not be prepared.
      - -t specifies the template to use, `tmpl_opt` corresponds to `$CRYVAR_TMPLDIR/tmpl_opt.bas`; in this example we have a template for geometry optimization
      - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce
    * press `Enter` to launch this command
    * The script will ask for the comment to be put into the first line of the new input file. Please put something meaningful in here, to be able later to understand what in the world did You calcualte.
-   * If left empty, it will produce the following:
+   
+     If left empty, it will produce the following:
      
-         FILENAME FUNCTIONAL_NAME BASIS_SET_NAME
+         FILENAME TEMPLATE_NAME FUNCTIONAL_NAME BASIS_SET_NAME BASIS_SETS_FOR_INDIVIDUAL_ELEMENTS_IF_DIFFERENT_FROM_BASIS_SET_NAME
      
    * For custom functionals, You should get the argument for the -d option by launching
      
          fxnl2cry.sh PW1PW20hf
      
      which will search for the definition of that density functional inside the file `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
-5. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets:
+5. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
+
+   OR if You are not too comfortable with command line:
    * launch the following command:
      
             cryalot
@@ -98,11 +105,11 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
    * And so it will prepare separate folders with the corresponding input files.
-6. Then, if You want to only launch the dcalculation on a single node, You can use the command:
+7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
      
-   Which prepares files `machines.LINUX` and nodes.par for a launch on a single node (containing the `$HOSTNAME` of present node).
+   Which prepares files `machines.LINUX` and `nodes.par` for a launch on a single node (containing the `$HOSTNAME` of present node).
    
    By default it will use all the available threads/cores, but You can also specify this as an argument, e.g.
    
@@ -112,10 +119,10 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
    
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
 
-   **!! IMPORTANT !!** You **will** need to edit this file to change our local cluster name (`lasc`) to anything You have at home.
-8. Launch Your CRYSTAL job as usual:
+   **!! IMPORTANT !!** You **will** need to edit **cry1** script to change our local cluster name (`lasc`) to anything You have at home.
+8. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
 
-       nohup runPcry23 20 INPUT_FILE_NAME &
+       nohup runPcry23 20 INPUT_FILE_NAME &> INPUT_FILE_NAME.logc &
 
 9. Enjoy!
 
