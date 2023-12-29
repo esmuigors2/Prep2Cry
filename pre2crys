@@ -39,22 +39,32 @@ mv "./${outfile}" "./${outfile}.tmp"
 
 ecpcheckf="/tmp/whetherecp.$$"
 sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
+curselbas=""
 echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
     el=$(sed -n "${un}p" $HOME/.pertanu)
     basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
     if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
         #ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas"
+        selbas=""
         echo -e "! Cannot find the basis set file \e[41;97m${basis}\e[m for element \e[41;97m${el}\e[m!"
-        rm "./${outfile}.tmp" "./${outfile}"
-        break
-    else
-        cat "$basfile" >> "./${outfile}"
-        eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
-        if [ "${#eldef}" -gt 2 ] && [ "${eldef:0:1}" == "2" ]; then
-            echo "2" >> "$ecpcheckf" 
-        else
-            echo "0" >> "$ecpcheckf"
+        echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls -l "$CRYVAR_BSDIR/${el}" | grep -v -e '^total' -e '^l' | gawk '{print $NF}' | xargs | sed 's@\s\+@\\e[m&\\e[44;97m@g')\e[m"
+        read -p "Which of them should we use for this element? Paste the name here:  " selbas
+        if [ -z "$selbas" ]; then
+            echo "Aborting."
+            rm "./${outfile}.tmp" "./${outfile}"
+            exit 2
         fi
+        selbas="${selbas%.bas}.bas"
+        ln -s $CRYVAR_BSDIR/${el}/${selbas} $CRYVAR_BSDIR/${el}/${basis}.bas
+    fi
+    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$curselbas ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
+    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo "Basis ${el}:${basis} is a link to ${el}:${curselbas}"
+    cat "$basfile" >> "./${outfile}"
+    eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
+    if [ "${#eldef}" -gt 2 ] && [ "${eldef:0:1}" == "2" ]; then
+        echo "2" >> "$ecpcheckf" 
+    else
+        echo "0" >> "$ecpcheckf"
     fi
 done
 [ ! -f "./${outfile}" ] && exit 3
@@ -82,8 +92,4 @@ sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
 sed -i '/==LISTWYKOFF/s@#@\n@g;s/==LISTWYKOFF//' "./${outfile}"
 sed -i '/==DFA/s@#@\n@g;s/==DFA//' "./${outfile}"
 
-#sed -i 's@@'"$"'@' "./${outfile}"
-
-
-#echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d'
 
