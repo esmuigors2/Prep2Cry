@@ -4,6 +4,7 @@
 [ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$HOME/crydarba/tmpl/basis"
 [ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
 
+echo "=== Call: $0 $@"
 comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""; template=""; helpme=false
 while getopts "hc:g:l:n:w:b:d:t:" myopts; do
     case $myopts in
@@ -22,6 +23,7 @@ done
 shift "$((OPTIND-1))"
 outfile="${1%.d12}.d12"
 [ -z "$outfile" ] && helpme=true
+#echo "DEBUG: comment is: $comment"
 
 if ($helpme); then
     echo -e "Usage: pre2crys [-c "COMMENT"] -g SPACEGROUP -l LATTICE_CONSTANT -n NUMBER_OF_ELEMENTS -w WYKOFF_POSITIONS_LINE -d DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE -b BASIS_SET_NAME -t TEMPLATE_NAME INPUT_FILE_NAME\n\nIn WYKOFF_POSITIONS_LINE and DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE (if neccessary) the newlines should be replaced with hashes (#)."
@@ -31,11 +33,14 @@ if ($helpme); then
 fi
 
 [ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && [ ! -L "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
-cp $CRYVAR_TMPLDIR/${template}.d12 "./${outfile}"
+cp "$CRYVAR_TMPLDIR/${template}.d12" "./${outfile}"
 mv "./${outfile}" "./${outfile}.tmp"
 
 ecpcheckf="/tmp/whetherecp.$$"
 curselbasf="/tmp/curselbas.$$"
+touch "$curselbasf"
+selbasf="/tmp/selbas.$$"
+touch "$selbasf"
 sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
 curselbas=""
 echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
@@ -46,17 +51,18 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
         selbas=""
         echo -e "! Cannot find the basis set file \e[41;97m${basis}\e[m for element \e[41;97m${el}\e[m!"
         echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls -l "$CRYVAR_BSDIR/${el}" | grep -v -e '^total' -e '^l' | gawk '{print $NF}' | xargs | sed 's@\s\+@\\e[m&\\e[44;97m@g')\e[m"
-        read -p "Which of them should we use for this element? Paste the name here:  " selbas
+        read -p "Which of them should we use for this element? Copy from above and paste the name here:  " selbas
         if [ -z "$selbas" ]; then
             echo "Aborting."
             rm "./${outfile}.tmp" "./${outfile}"
             exit 2
         fi
         selbas="${selbas%.bas}.bas"
-        ln -s $CRYVAR_BSDIR/${el}/${selbas} $CRYVAR_BSDIR/${el}/${basis}.bas
+        echo "$CRYVAR_BSDIR/${el}/${basis}.bas" >> "$selbasf"
+        ln -s "$CRYVAR_BSDIR/${el}/${selbas}" "$CRYVAR_BSDIR/${el}/${basis}.bas"
     fi
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$(cat "$curselbasf" | xargs) ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
-    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo "Basis ${el}:${basis} is a link to ${el}:${curselbas}"
+    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo ">>> Basis ${el}:${basis} is a link to ${curselbas# }"
     cat "$basfile" >> "./${outfile}"
     eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
     if [ "${#eldef}" -gt 2 ] && [ "${eldef:0:1}" == "2" ]; then
@@ -64,10 +70,15 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     else
         echo "0" >> "$ecpcheckf"
     fi
-    echo "$curselbas" > "$curselbasf"
+    echo "$curselbas" >> "$curselbasf"
 done
-curselbas="$(cat "$curselbasf" | xargs)"
-rm "$curselbasf"
+if [ -f "$selbasf" ]; then
+    cat "$selbasf" | while read un; do
+        [ -L "$un" ] && rm "$un"
+    done
+    rm "$selbasf"
+fi
+[ -f "$curselbasf" ] && rm "$curselbasf"
 
 [ -z "$comment" ] && read -p "Please enter the comment/human-readable info about this job:   " comment
 [ -z "$comment" ] && comment="${outfile%.d12} ${template%.d12} $dfa $basis $curselbas"
