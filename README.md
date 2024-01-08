@@ -46,7 +46,8 @@ Like this:
 The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
 
 2. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
-3. If You only want to prepare a single file AND You are comfortable with using bash scripts:
+3. Then continue with **either** 4. or 5.
+4. If You only want to prepare a single file AND You are comfortable with using bash scripts:
    * copy the output of `prep2cry.sh` (as shown before) and add the parts in bold:
      
      <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-d PBE0 -b pob_tzvp_2012 -t tmpl_opt CaF2_tzvp2018_PBE0_opt.d12</b></pre>
@@ -72,7 +73,7 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
          fxnl2cry.sh PW1PW20hf
      
      which will search for the definition of that density functional inside the file `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
-4. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
+5. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
 
    OR if You are not too comfortable with command line:
    * launch the following command:
@@ -105,7 +106,7 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
    * And so it will prepare separate folders with the corresponding input files.
-5. Then, if You want to only launch the dcalculation on a single node, You can use the command:
+6. Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
      
@@ -120,10 +121,10 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
 
    **!! IMPORTANT !!** You **will** need to edit **cry1** script to change our local cluster name (`lasc`) to anything You have at home.
-6. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
+7. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
 
        nohup runPcry23 20 INPUT_FILE_NAME &> INPUT_FILE_NAME.logc &
 
-7. Enjoy!
+8. Enjoy!
 
 End and glory to God.
