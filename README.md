@@ -17,6 +17,8 @@ Also, do not forget to place `.pertanu` under Your `$HOME` -- BOTH on the 'clien
 
 The directories (and template files) under prep2cry.serv.dirs must also be present on the 'server', and their locations must also be mentioned in the environmental variables (see below).
 
+You can [download all the main branch as an archive](https://github.com/esmuigors2/Prep2Cry/archive/master.tar.gz) and upload in on the 'server', extract all the contants and place them in appropriate folders.
+
 ## Environmental variables
 The scripts intended to run on the 'server' rely on three environmental variables:
   1. `CRYVAR_TMPLDIR`  -- the directory containing template files, such as tmpl_opt.d12 (if empty, defaults to `$HOME/crydarba/tmpl`)
