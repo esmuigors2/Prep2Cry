@@ -10,14 +10,16 @@
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
 
-## Where to place the scripts
-The scripts shold be in `$HOME/bin` or in any other directory You added to Your `$PATH`.
+## Where to place the scripts and the directories
+The scripts shold be in `$HOME/bin` or in any other directory You added to Your `$PATH`. prep2cry.sh should be on the machine You are viewing the CIF files (hereinafter called the 'client' or 'local machine'); all the other scripts must be on the machine You are using for calculations (hereinafter called the 'server').
 
-Also, do not forget to place `.pertanu` under Your `$HOME` -- BOTH on the local machine and on the server.
+Also, do not forget to place `.pertanu` under Your `$HOME` -- BOTH on the 'client' and the 'server'.
+
+The directories (and template files) under prep2cry.serv.dirs must also be present on the 'server', and their locations must also be mentioned in the environmental variables (see below).
 
 ## Environmental variables
-The scripts rely on three environmental variables:
-  1. `CRYVAR_TMPLDIR`  -- the directory containing the template file tmpl.d12 (if empty, defaults to `$HOME/crydarba/tmpl`)
+The scripts intended to run on the 'server' rely on three environmental variables:
+  1. `CRYVAR_TMPLDIR`  -- the directory containing template files, such as tmpl_opt.d12 (if empty, defaults to `$HOME/crydarba/tmpl`)
   2. `CRYVAR_BSDIR` -- the directory containing the directories with basis sets (if empty, defaults to `$HOME/crydarba/tmpl/basis`)
   3. `CRYVAR_FXLDIR` -- the directory containing the custom functionals, defined as they would be in the input file (if empty, defaults to `$HOME/crydarba/tmpl/fxnls`)
 
