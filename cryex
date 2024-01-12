@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo -e "\t\t\tNormal?\tGeom?\tTot.time\tDate begun\tDate ended\t1SCFT\tLat.con.\tB.gap"
+
+for un in *; do
+    if [ -d "$un" ]; then
+        [ -f "${un}/nohup.out" ] && mv "${un}/nohup.out" "${un}/nohup.out.log"
+        ifnt=$(grep -c '^ EEEEEEEEEE TERMINATION' "${un}/"*.out)
+        ngcyc=$(grep -c 'CELL OPTIMIZATION - POINT' "${un}/"*.out)
+        ifgpt=$(grep -c 'FINAL OPTIMIZED GEOMETRY' "${un}/"*.out)
+        t1scf=$(grep ' TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT EDFT' "${un}/"*.out | gawk '{print $NF}')
+        lastime="$(sed -n '/OPT END - CONVERGED/,$p' "${un}/"*.out)"
+        bandgap=$(echo "$lastime" | grep 'BAND GAP:' | gawk '{print $3}')
+        latcon=$(echo "$lastime" | grep -A 2 'CRYSTALLOGRAPHIC CELL (VOLUME=' | sed -n '$p' | xargs | cut -d ' ' -f 1)
+        [ -z "$latcon" ] && latcon=$(echo "$lastime" | grep -A 2 'PRIMITIVE CELL -' | sed -n '$p' | xargs | cut -d ' ' -f 1)
+        lastime="$(echo "$lastime" | sed -n '/TOTAL CPU TIME =/,$p')"
+        dbeg=$(head -1 "${un}/"*.out | xargs | cut -d ' ' -f 3,4,7)
+        tcputime=$(echo "$lastime" | grep 'TOTAL CPU TIME =' | gawk '{print $NF}')
+        dterm=$(sed -n '/TOTAL CPU TIME =/,/^wave func/p' "${un}/"*.out | sed -n '2p' | xargs | cut -d ' ' -f 2,3,6)
+        echo -e "$un\t$ifnt\t$ifgpt\t$tcputime\t$dbeg\t$dterm\t$t1scf\t$latcon\t$bandgap"
+    fi
+done
+
+
