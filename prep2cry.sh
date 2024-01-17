@@ -34,7 +34,7 @@ fi
 #echo "===DEBUG: WUPOS"
 #cat "${tmpfille}.wypos"
 wypos="$(echo -n '"'; paste -d ' ' "${tmpfille}.wyel" "${tmpfille}.wypos" | while read un; do echo -n "${un}#"; done; echo '"')"
-spgrp="$(grep -e '_symmetry_Int_Tables_number' -e '_space_group_IT_number' "$cifile" | gawk '{print $2}')"
+spgrp="$(grep -m 1 -e '_symmetry_Int_Tables_number' -e '_space_group_IT_number' "$cifile" | gawk '{print $2}')"
 numel="$(echo "$wypos" | grep -o '#' | wc -l)"
 latcon="$(grep '_cell_length_a'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
 
