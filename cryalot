@@ -48,7 +48,9 @@ done
 for un in $aselbas; do
     el="$(echo "$un" | cut -d : -f 1)"
     realbas="$(echo "$un" | cut -d : -f 2)"
-    fakebas="$(ls -l "$CRYVAR_BSDIR/${el}" | grep '^l' | grep "$realbas" | cut -d '>' -f 1 | sed 's@ -$@@' | gawk '{print $NF}')"
-    [ -f "$CRYVAR_BSDIR/${el}/${fakebas}" ] && rm "$CRYVAR_BSDIR/${el}/${fakebas}" || echo "DEBUG: CAL: for some reason ${fakebas} file was not present!"
+    fakebas="$(ls -l "$CRYVAR_BSDIR/${el}" | grep '^l' | grep "$realbas" | cut -d '>' -f 1 | sed 's@ -$@@' | gawk '{print $NF}' | xargs)"
+    for dfdfdf in $fakebas; do
+        [ -f "$CRYVAR_BSDIR/${el}/${dfdfdf}" ] && rm "$CRYVAR_BSDIR/${el}/${dfdfdf}" || echo "DEBUG: CAL: for some reason ${dfdfdf} file was not present!"
+    done
 done
 
