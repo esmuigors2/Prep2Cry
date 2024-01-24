@@ -34,7 +34,7 @@ fi
 
 [ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && [ ! -L "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
 cp "$CRYVAR_TMPLDIR/${template}.d12" "./${outfile}"
-if [ "$(echo "${dfa}" | sed 's@^(R\|U)@@')" == 'HF' ]; then
+if [ "$(echo "${dfa}" | sed 's@^\(R\|U\)@@')" == 'HF' ]; then
     sed -i '/^DFT/,/^END/d' "./${outfile}"
 fi
 mv "./${outfile}" "./${outfile}.tmp"
