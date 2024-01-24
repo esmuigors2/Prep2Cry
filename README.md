@@ -57,7 +57,10 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
      <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-d PBE0 -b pob_tzvp_2012 -t tmpl_opt CaF2_tzvp2018_PBE0_opt.d12</b></pre>
      
      Here,
-     - -d option gives the DFA (density functional approximation) used, while
+     - -d option gives the DFA (density functional approximation) used;
+
+       If the argument for this option is HF, RHF or UHF, the script will automatically remove the DFT block from the input file.
+     
      - -b specifies the basis set, as found under `$CRYVAR_BSDIR/basis/Ca/pob_tzvp_2012.bas` and `$CRYVAR_BSDIR/basis/F/pob_tzvp_2012.bas` .
           
        If there is no such basis set under `$CRYVAR_BSDIR/basis/$element_name` , the script will abort, and the input file will not be prepared. Please do one of the following:
@@ -80,7 +83,7 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
          fxnl2cry.sh PW1PW20hf
      
      which will search for the definition of that density functional inside the file `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
-5. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
+6. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
 
    OR if You are not too comfortable with command line:
    * launch the following command:
@@ -113,7 +116,7 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
    * And so it will prepare separate folders with the corresponding input files.
-6. Then, if You want to only launch the dcalculation on a single node, You can use the command:
+7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
      
@@ -128,10 +131,10 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
 
    **!! IMPORTANT !!** You **will** need to edit **cry1** script to change our local cluster name (`lasc`) to anything You have at home.
-7. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
+8. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
 
        nohup runPcry23 20 INPUT_FILE_NAME &> INPUT_FILE_NAME.logc &
 
-8. Enjoy!
+9. Enjoy!
 
 End and glory to God.
