@@ -60,9 +60,12 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
      - -d option gives the DFA (density functional approximation) used, while
      - -b specifies the basis set, as found under `$CRYVAR_BSDIR/basis/Ca/pob_tzvp_2012.bas` and `$CRYVAR_BSDIR/basis/F/pob_tzvp_2012.bas` .
           
-       If there is no such basis set under `$CRYVAR_BSDIR/basis/$element_name` , You will be prompted about which basis set to use instead.
-          
-       If You just press `Enter` at this point, the script will abort, and the input file will not be prepared.
+       If there is no such basis set under `$CRYVAR_BSDIR/basis/$element_name` , the script will abort, and the input file will not be prepared. Please do one of the following:
+       
+       * use `cryalot` (see step 5);
+       * find the missing basis set and repeat the run of pre2crys;
+       * make a symbolic link, named after the basis set missing, which points to some basis set actually present for the element in question
+       
      - -t specifies the template to use, `tmpl_opt` corresponds to `$CRYVAR_TMPLDIR/tmpl_opt.bas`; in this example we have a template for geometry optimization
      - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce
    * press `Enter` to launch this command
