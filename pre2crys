@@ -34,7 +34,7 @@ fi
 
 [ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && [ ! -L "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
 cp "$CRYVAR_TMPLDIR/${template}.d12" "./${outfile}"
-if [ "$(echo "${dfa}" | sed 's@^(R\|U)@@')" -eq 'HF' ]; then
+if [ "$(echo "${dfa}" | sed 's@^(R\|U)@@')" == 'HF' ]; then
     sed -i '/^DFT/,/^END/d' "./${outfile}"
 fi
 mv "./${outfile}" "./${outfile}.tmp"
@@ -51,18 +51,10 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
     if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
         #ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas"
-        selbas=""
         echo -e "! Cannot find the basis set file \e[41;97m${basis}\e[m for element \e[41;97m${el}\e[m!"
-        echo -e "Found these basis sets for this element:\n   \e[44;97m$(ls -l "$CRYVAR_BSDIR/${el}" | grep -v -e '^total' -e '^l' | gawk '{print $NF}' | xargs | sed 's@\s\+@\\e[m&\\e[44;97m@g')\e[m"
-        read -p "Which of them should we use for this element? Copy from above and paste the name here:  " selbas
-        if [ -z "$selbas" ]; then
-            echo "Aborting."
-            rm "./${outfile}.tmp" "./${outfile}"
-            exit 2
-        fi
-        selbas="${selbas%.bas}.bas"
-        echo "$CRYVAR_BSDIR/${el}/${basis}.bas" >> "$selbasf"
-        ln -s "$CRYVAR_BSDIR/${el}/${selbas}" "$CRYVAR_BSDIR/${el}/${basis}.bas"
+        echo "Aborting."
+        rm "./${outfile}.tmp" "./${outfile}"
+        exit 24 # exits only the subshell of the while loop
     fi
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$(cat "$curselbasf" | xargs) ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo ">>> Basis ${el}:${basis} is a link to ${curselbas# }"
@@ -75,6 +67,9 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     fi
     echo "$curselbas" >> "$curselbasf"
 done
+if [ $? -eq 24 ]; then
+    exit 2
+fi
 if [ -f "$selbasf" ]; then
     cat "$selbasf" | while read un; do
         [ -L "$un" ] && rm "$un"
