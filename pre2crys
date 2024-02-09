@@ -96,7 +96,7 @@ for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
 done
 rm "$ecpcheckf"
 #echo "$wypos2"
-wypos="${wypos2//%/\#}"
+wypos="${wypos2//%/\#}" # to enable correct formatting in vim
 
 sed -n '/==BASIS/,$p' "./${outfile}.tmp" | sed '1d' >> "./${outfile}"
 rm "./${outfile}.tmp"
@@ -104,8 +104,9 @@ sed -i '1s@==COMMENT@'"$comment"'@' "./${outfile}"
 sed -i 's@==GROUP@'"$spcgrp"'@' "./${outfile}"
 sed -i 's@==LATCON@'"$latcon"'@' "./${outfile}"
 sed -i 's@==NUMEL@'"$numel"'@' "./${outfile}"
-sed -i 's@==LISTWYKOFF@&'"${wypos#\#}"'@' "./${outfile}"
+sed -i 's@==LISTWYKOFF@&'"${wypos#\\\#}"'@' "./${outfile}"
 sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
+grep '==LISTWYKOFF' "./${outfile}"
 
 sed -i '/==LISTWYKOFF/s@#@\n@g;s/==LISTWYKOFF//' "./${outfile}"
 sed -i '/==DFA/s@#@\n@g;s/==DFA//' "./${outfile}"
