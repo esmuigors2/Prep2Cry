@@ -60,8 +60,9 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo ">>> Basis ${el}:${basis} is a link to ${curselbas# }"
     cat "$basfile" >> "./${outfile}"
     eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
-    if [ "${#eldef}" -gt 2 ] && [ "${eldef:0:1}" == "2" ]; then
-        echo "2" >> "$ecpcheckf" 
+    if [ "${#eldef}" -gt 2 ]; then # Crystal will not consider atoms with Z > 99, using first number for specifying
+                                   # either a site-specific BS or a BS with an ECP
+        echo "${eldef:0:1}" >> "$ecpcheckf" 
     else
         echo "0" >> "$ecpcheckf"
     fi
@@ -85,15 +86,17 @@ fi
 [ ! -f "./${outfile}" ] && exit 3
 wypos2="#${wypos%\#}"
 for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
-    if [ "$(sed -n "$yu"'p' "$ecpcheckf")" == "2" ]; then
-        wypos2="${wypos2/\#/%2}"
+    if [ "$(sed -n "$yu"'p' "$ecpcheckf")" != "0" ]; then
+        #wypos2="${wypos2/\#/%2}"
+        natsymb="$(sed -n "$yu"'p' "$ecpcheckf")"
+        wypos2="$(echo "$wypos2" | sed 's@#@%'"$natsymb"'@')"
     else
         wypos2="${wypos2/\#/%}"
     fi
 done
 rm "$ecpcheckf"
 #echo "$wypos2"
-wypos="${wypos2//%/#}"
+wypos="${wypos2//%/\#}"
 
 sed -n '/==BASIS/,$p' "./${outfile}.tmp" | sed '1d' >> "./${outfile}"
 rm "./${outfile}.tmp"
