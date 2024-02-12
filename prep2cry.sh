@@ -39,26 +39,26 @@ numel="$(echo "$wypos" | grep -o '#' | wc -l)"
 latcon="$(grep -m 1 '_cell_length_a'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
 lbtcon="$(grep -m 1 '_cell_length_b'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
 lctcon="$(grep -m 1 '_cell_length_c'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
-lltcon="$(grep -m 1 '_cell_length_a'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
-letcon="$(grep -m 1 '_cell_length_b'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
-lgtcon="$(grep -m 1 '_cell_length_c'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
+lltcon="$(grep -m 1 '_cell_angle_alpha'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
+letcon="$(grep -m 1 '_cell_angle_beta'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
+lgtcon="$(grep -m 1 '_cell_angle_gamma'  "$cifile" | gawk '{print $2}' | cut -d '(' -f 1)"
 numlatcol=$(echo -e "${latcon}\n${lbtcon}\n${lctcon}" | sort -u | wc -l)
-latconn90=$(echo -e "${lltcon}\n${letcon}\n${lgtcon}" | grep -v '^90.0')
+latconn90=$(echo -e "${lltcon}\n${letcon}\n${lgtcon}" | grep -v '\(^90.0\|^90$\)')
 numlatcoa=$(echo -e "${lltcon}\n${letcon}\n${lgtcon}" | sort -u | wc -l)
-numlata90=$(echo -e "${lltcon}\n${letcon}\n${lgtcon}" | grep '^90.0' | wc -l)
+numlata90=$(echo -e "${lltcon}\n${letcon}\n${lgtcon}" | grep '\(^90.0\|^90$\)' | wc -l)
 if [ "$numlatcol" -ne 1 ] || [ -n "$latconn90" ]; then # else cubic
     if [ "$numlatcol" -eq 3 ] && [ "$numlata90" -eq 0 ]; then # triclinic
         latcon='"'"${latcon}#${lbtcon}#${lctcon}#${lltcon}#${letcon}#${lgtcon}"'"'
-    else if [ "$numlatcol" -eq 3 ] && [ "$numlata90" -eq 2 ]; then # monoclinic
+    elif [ "$numlatcol" -eq 3 ] && [ "$numlata90" -eq 2 ]; then # monoclinic
         latcon='"'"${latcon}#${lbtcon}#${lctcon}#${latconn90}"'"'
-    else if [ "$numlatcol" -eq 2 ] && [ "$numlata90" -eq 1 ]; then # hexagonal
+    elif [ "$numlatcol" -eq 2 ] && [ "$numlata90" -eq 2 ]; then # hexagonal
         latcon='"'"${latcon}#${lctcon}#${lgtcon}"'"'
-    else if [ "$numlatcol" -eq 1 ] && [ "$numlatcoa" -eq 1 ]; then # rhombohedral
+    elif [ "$numlatcol" -eq 1 ] && [ "$numlatcoa" -eq 1 ]; then # rhombohedral
         latcon='"'"${latcon}#${lltcon}"'"'
-    else if [ -z "$latconn90" ]; then
+    elif [ -z "$latconn90" ]; then
         if [ "$numlatcol" -eq 2 ]; then # tetragonal
             latcon='"'"${latcon}#${lctcon}"'"'
-        else if [ "$numlatcol" -eq 3 ]; then # orthorhombic
+        elif [ "$numlatcol" -eq 3 ]; then # orthorhombic
             latcon='"'"${latcon}#${lbtcon}#${lctcon}"'"'
         fi
     fi
