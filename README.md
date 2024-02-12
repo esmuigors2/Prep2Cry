@@ -37,17 +37,23 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
    
         prep2cry.sh CIFNAME.cif
    
-This will return the first part of the pre2crys command, containing:
-- -g : space group (number according to ITC)
-- -l : lattice constant (currently only cubic structures are supported but the extension seems straightforward)
-- -n : number of elements in the compound
-- -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates)
+      This will return the first part of the pre2crys command, containing:
+      - -g : space group (number according to ITC)
+      - -l : lattice constant (currently only cubic structures are supported but the extension seems straightforward)
+      - -n : number of elements in the compound
+      - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates)
+            
+      Like this:
       
-Like this:
-
-      pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
+            pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
+            
+      The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
       
-The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
+      **Site-specific basis sets**
+      
+      **If** You want to define specific basis set for a site position, please prefix the corresponding atom number with 1, 10, 100, …
+      
+      **If** You want to define a specific ECP for a site position, please prefix the corresponding atom number with 2, 3, 4, …
 
 2. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
 3. Then continue with **either** 4. or 5.
@@ -111,7 +117,17 @@ The Wyckoff positions are given in a single line where the hash substitutes for 
           If there is no such basis set under `$CRYVAR_BSDIR/basis/$element_name` , You will be prompted about which basis set to use instead.
           
           If You just press `Enter` at this point, the script will abort, and no further input files will be prepared.
-       5. The semi-finished line from prep2cry.sh, e.g.
+
+          **Site-specific basis sets**
+
+          **REMEMBER:** if You want to define specific basis set for a site position, You should have prefixed the corresponding atom number with 1, 10, 100, … in the Wykoff position definition.
+          
+          **If** You want to define a specific ECP for a site position, You should have prefixed prefix the corresponding atom number with 2, 3, 4, … in the Wykoff position definition.
+          
+          If this was done in the right way, now You should proceed as follows:
+             1. At the prompt of list of basis sets, enter some words not actually corresponding to any basis set (e.g., "haha hihi" for two different setups of site-specific basis sets).
+             2. Now You should be prompted for the basis set separately for each site.
+       6. The semi-finished line from prep2cry.sh, e.g.
           
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
