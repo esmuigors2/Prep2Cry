@@ -10,7 +10,7 @@ read -p "Please input the template name:  " tmpln
 read -p "Please input all the functionals You want to use, separating names with a space:  " fxnls
 read -p "Please input all the basis sets You want to use, separating names with a space:  " bases
 read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
-lelm="$(echo "$pcryln" | grep -o -e '-w ".*"' | sed 's@-w "@@;s@#"$@@;s@#@\n@g' | gawk '{print $1}')"
+lelm="$(echo "$pcryln" | grep -o -e '-w ".*"' | sed 's@-w "@@;s@#"$@@;s@#@\n@g' | gawk '{print $1%100}')" # wow, i learned some awk today
 #echo "$lelm"
 
 selbas=""; aselbas=""
