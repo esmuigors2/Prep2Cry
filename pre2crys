@@ -47,7 +47,12 @@ touch "$selbasf"
 sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
 curselbas=""
 echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
-    el=$(sed -n "${un}p" $HOME/.pertanu)
+    iun="$un"; prefun=""
+    if [ "$un" -gt 99 ]; then
+        prefun="${un:0:1}"
+        iun="${un:1:2}"
+    fi
+    el=$(sed -n "${iun}p" $HOME/.pertanu)
     basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
     if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
         #ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas"
@@ -58,12 +63,24 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
     fi
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$(cat "$curselbasf" | xargs) ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo ">>> Basis ${el}:${basis} is a link to ${curselbas# }"
-    cat "$basfile" >> "./${outfile}"
     eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
-    if [ "${#eldef}" -gt 2 ] && [ "${eldef:0:1}" == "2" ]; then
-        echo "2" >> "$ecpcheckf" 
+    if [ "${#eldef}" -gt 2 ]; then # Crystal will not consider atoms with Z > 99, using first number for specifying
+                                   # either a site-specific BS or a BS with an ECP
+        if [ -n "$prefun" ]; then
+            cat "$basfile" | sed '1s@[0-9]@'"$prefun"'@' >> "./${outfile}"
+            echo "${prefun}+" >> "$ecpcheckf"
+        else
+            cat "$basfile" >> "./${outfile}"
+            echo "${eldef:0:1}" >> "$ecpcheckf" 
+        fi
     else
-        echo "0" >> "$ecpcheckf"
+        if [ -n "$prefun" ]; then
+            cat "$basfile" | sed '1s@[0-9]@'"$prefun"'&@' >> "./${outfile}"
+            echo "${prefun}+" >> "$ecpcheckf"
+        else
+            cat "$basfile" >> "./${outfile}"
+            echo "0" >> "$ecpcheckf"
+        fi
     fi
     echo "$curselbas" >> "$curselbasf"
 done
@@ -85,15 +102,21 @@ fi
 [ ! -f "./${outfile}" ] && exit 3
 wypos2="#${wypos%\#}"
 for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
-    if [ "$(sed -n "$yu"'p' "$ecpcheckf")" == "2" ]; then
-        wypos2="${wypos2/\#/%2}"
+    kfef="$(sed -n "$yu"'p' "$ecpcheckf")"
+    if [ "$kfef" != "0" ]; then
+        # OLD: wypos2="${wypos2/\#/%2}"
+        if [ "$kfef" != "${kfef%+}" ]; then
+            wypos2="${wypos2/\#/%}"
+        else
+            wypos2="$(echo "$wypos2" | sed 's@#@%'"$kfef"'@')"
+        fi
     else
         wypos2="${wypos2/\#/%}"
     fi
 done
 rm "$ecpcheckf"
-#echo "$wypos2"
-wypos="${wypos2//%/#}"
+# DEBUG: echo "$wypos2"
+wypos="${wypos2//%/\#}" # to enable correct formatting in vim
 
 sed -n '/==BASIS/,$p' "./${outfile}.tmp" | sed '1d' >> "./${outfile}"
 rm "./${outfile}.tmp"
@@ -101,8 +124,9 @@ sed -i '1s@==COMMENT@'"$comment"'@' "./${outfile}"
 sed -i 's@==GROUP@'"$spcgrp"'@' "./${outfile}"
 sed -i 's@==LATCON@'"$latcon"'@' "./${outfile}"
 sed -i 's@==NUMEL@'"$numel"'@' "./${outfile}"
-sed -i 's@==LISTWYKOFF@&'"${wypos#\#}"'@' "./${outfile}"
+sed -i 's@==LISTWYKOFF@&'"${wypos#\\\#}"'@' "./${outfile}"
 sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
+# DEBUG: grep '==LISTWYKOFF' "./${outfile}"
 
 sed -i '/==LISTWYKOFF/s@#@\n@g;s/==LISTWYKOFF//' "./${outfile}"
 sed -i '/==DFA/s@#@\n@g;s/==DFA//' "./${outfile}"
