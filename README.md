@@ -39,7 +39,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
    
       This will return the first part of the pre2crys command, containing:
       - -g : space group (number according to ITC)
-      - -l : lattice constant (currently only cubic structures are supported but the extension seems straightforward)
+      - -l : lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
       - -n : number of elements in the compound
       - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates)
             
