@@ -120,14 +120,16 @@ wypos="${wypos2//%/\#}" # to enable correct formatting in vim
 
 sed -n '/==BASIS/,$p' "./${outfile}.tmp" | sed '1d' >> "./${outfile}"
 rm "./${outfile}.tmp"
+
 sed -i '1s@==COMMENT@'"$comment"'@' "./${outfile}"
 sed -i 's@==GROUP@'"$spcgrp"'@' "./${outfile}"
-sed -i 's@==LATCON@'"$latcon"'@' "./${outfile}"
+sed -i 's@==LATCON@&'"$latcon"'@' "./${outfile}"
 sed -i 's@==NUMEL@'"$numel"'@' "./${outfile}"
 sed -i 's@==LISTWYKOFF@&'"${wypos#\\\#}"'@' "./${outfile}"
 sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
 # DEBUG: grep '==LISTWYKOFF' "./${outfile}"
 
+sed -i '/==LATCON/s@#@\n@g;s/==LATCON//' "./${outfile}"
 sed -i '/==LISTWYKOFF/s@#@\n@g;s/==LISTWYKOFF//' "./${outfile}"
 sed -i '/==DFA/s@#@\n@g;s/==DFA//' "./${outfile}"
 
