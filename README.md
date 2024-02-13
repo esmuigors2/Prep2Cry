@@ -122,9 +122,13 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
             cryalot
     
    * it will prompt You for:
-       1. The compound name (to use in the filenames and cooment lines in input files)
-       2. The template name (e.g., `tmpl_opt` for geometry optimizations -- found in file `$CRYVAR_TMPLDIR/tmpl_opt.bas`)
-       3. The list of all functionals You want to use, separated by space; e.g.,
+       1. The compound name (to use in the filenames and cooment lines in input files);
+       2. The type of geometry used in this calculation (crystal, molecule or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
+       3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
+       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.);
+       5. Whether Mulliken population analysis will be run in the end of calculation;
+       6. Which density grid should be used (if You press `Enter`, XLGRID will be used);
+       7. The list of all functionals You want to use, separated by space; e.g.,
      
                PBE0 B3LYP PW1PW20hf
           
@@ -133,7 +137,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
           But `PW1PW20hf` is a custom-defined functional, which means it must have a file under `$CRYVAR_FXLDIR` , like `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
           
           The script cryalot will automatically distinguish between the two (if a file is found, it will use that; otherwise it will asume CRYSTAL knows this functional).
-       4. The list of all basis sets You want to use, separated by space; e.g.,
+       8. The list of all basis sets You want to use, separated by space; e.g.,
           
                pob_tzvp_2012 pob_tzvp_rev2
           
@@ -152,11 +156,17 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
           If this was done in the right way, now You should proceed as follows:
              1. At the prompt of list of basis sets, enter some words not actually corresponding to any basis set (e.g., "haha hihi" for two different setups of site-specific basis sets).
              2. Now You should be prompted for the basis set separately for each site.
-       6. The semi-finished line from prep2cry.sh, e.g.
+       9. The semi-finished line from prep2cry.sh, e.g.
           
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
    * And so it will prepare separate folders with the corresponding input files.
+   * **NOTE OF EFFICIENCY** You can use command-line arguments for cryalot to facilitate selection of calculation type and parameters.
+       - For example, to run a frequency calculation (-a f) with intensities (-f i) on a crystal (-s c) with Mulliken analysis (-p), run:
+    
+         cryalot -s c -a f -f i -p
+
+       - All options are the same as for pre2crys script (see above), but not all command-line options for pre2crys are supported in cryalot.
 7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
