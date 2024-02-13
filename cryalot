@@ -2,20 +2,65 @@
 
 [ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$HOME/crydarba/tmpl/basis"
 [ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
-[ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl"
+[ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl/tmpls"
 
 fxnls=""; bases=""; pcryln=""; cmpd=""; tmpln=""
+struc=0; hexag=0; action=0; freqopts=0; pscf=0; grid="0"
+actionwords=""
+
+while getopts "s:x:a:f:pr:" myopts; do
+    case $myopts in
+    s) struc="$OPTARG"; ;;
+    x) hexag="$OPTARG"; ;;
+    a) action="$OPTARG"; ;;
+    f) freqopts="$OPTARG"; ;;
+    p) pscf="y"; ;;
+    r) grid="$OPTARG"; ;;
+    \?) echo "Some specified options were not recognized. Try pre2crys -h for information about available options."; exit 1 ;; # for cases of "invented" options
+    esac
+done
+shift "$((OPTIND-1))"
+[ "${freqopts:0:1}" == "-" ] && echo -e "\033[31mIf You do not wish any calculations about phonons except for modes, You should use option argument 0.\n   Like this: cryalot -a f -f 0 -r XXLGRID\nDo not leave the option -f without an argument!!!\033[0m" && exit 17
+
 read -p "Please input the compound name:  " cmpd
-read -p "Please input the template name:  " tmpln
+if [ "$struc" == "0" ]; then
+    echo -e "Please select the type of structure:\n   (1) Crystal\n   (2) External\n   (3) Molecule"
+    read -n 1 -p "Please give Your choice:  " struc
+    echo
+    [ "$struc" == "2" ] || [ "$struc" == "e" ] && echo -e "\033[31mPlease do not forget to place NAME.gui or fort.34 file inside all the directories that will be created now!\033[0m"
+fi
+if [ "$action" == "0" ]; then
+    echo -e "Please select the type of calculation:\n   (1) Energy\n   (2) Geometry optimization\n   (3) Phonons\n   (4) Elastic constants"
+    read -n 1 -p "Please give Your choice:  " action
+    echo
+fi
+if [ "$action" == "3" ] && [ "$freqopts" == "0" ]; then
+    echo -e "Please select options for phonon calculation (input a combination of numbers and press Enter):\n   (1) IR intensities\n   (2) Raman intensities\n   (3) Dispersion\n   (4) Vibrational pDOS"
+    read -p "Please give Your choice:  " freqopts
+fi
+if [ "$pscf" == "0" ]; then
+    read -n 1 -p "Do You need population analysis? (y/n)   " pscf
+    echo
+fi
+if [ "$grid" == "0" ]; then
+    read -p "Please input the density grid You want to use (Enter means XLGRID):   " grid
+fi
 read -p "Please input all the functionals You want to use, separating names with a space:  " fxnls
 read -p "Please input all the basis sets You want to use, separating names with a space:  " bases
 read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
+grupa="$(echo "$pcryln" | grep -o -e '-g [0-9]\+' | sed 's@-g @@')"
+if [ "$grupa" -gt 142 ] && [ "$grupa" -lt 168 ] && [ "$hexag" == "0" ]; then
+    echo -e "Please select whether You want use:\n   (1) hexagonal or\n   (2) rhombohedric cell."
+    read -n 1 -p "Please give Your choice:  " hexag
+    echo
+fi
 lelm="$(echo "$pcryln" | grep -o -e '-w ".*"' | sed 's@-w "@@;s@#"$@@;s@#@\n@g' | gawk '{print $1%100}')" # wow, i learned some awk today
 #echo "$lelm"
 
 selbas=""; aselbas=""
 for un in $fxnls; do
     for eun in $bases; do
+        actionwords=""
         curselbas=""
         for lun in $lelm; do
             el=$(sed -n "${lun}p" $HOME/.pertanu)
@@ -38,9 +83,52 @@ for un in $fxnls; do
             unn="$un"
         fi
         curn="${un}_${eun/_/}"
+
+        choices=""
+        case "$struc" in
+            "1" | "c")
+                choices="$choices -s c"
+                ;;
+            "2" | "e")
+                choices="$choices -s e"
+                ;;
+            "3" | "m")
+                choices="$choices -s m"
+                ;;
+        esac
+        [ "$hexag" == "r" ] || [ "$hexag" == "2" ] && choices="$choices -x"
+        case "$action" in
+            "1" | "s")
+                ;;
+            "2" | "o")
+                choices="$choices -a o"
+                actionwords="opt ${actionwords}"
+                ;;
+            "3" | "f")
+                choices="$choices -a f"
+                actionwords="phonons ${actionwords}"
+                ;;
+            "4" | "e")
+                choices="$choices -a e"
+                actionwords="elconst ${actionwords}"
+                ;;
+        esac
+        freqchoices=""
+        if [ "$freqopts" != "0" ]; then
+            [ -n "$(echo "$freqopts" | grep 'i\|1')" ] && freqchoices="${freqchoices}i"
+            [ -n "$(echo "$freqopts" | grep 'r\|2')" ] && freqchoices="${freqchoices}r"
+            [ -n "$(echo "$freqopts" | grep 'd\|3')" ] && freqchoices="${freqchoices}d"
+            [ -n "$(echo "$freqopts" | grep 'p\|4')" ] && freqchoices="${freqchoices}p"
+            [ -n "$freqchoices" ] && choices="$choices -f $freqchoices" && actionwords="$(echo "$actionwords" | sed 's@phonons@&-'"$freqchoices"'@')"
+        fi
+        [ "$pscf" == "y" ] && choices="$choices -p"
+        [ -n "$grid" ] && [ "$grid" != "0" ] && choices="$choices -r $grid" || grid="XLGRID"
+        actionwords="$(echo "$actionwords" | sed 's@^ @@;s@ $@@')"
+
         mkdir "$curn"
         cd "$curn"
-        echo -e "\n" | eval "$pcryln" -d "$unn" -b "$eun" -t "$tmpln" -c "\"${cmpd} ${tmpln#tmpl_} $un $eun $curselbas\"" "${cmpd}_${curn}_${tmpln#tmpl_}.d12"
+        echo -e "\n" | eval "$pcryln $choices" -d "$unn" -b "$eun" -c "\"${cmpd} ${actionwords} ${grid} $un $eun $curselbas\"" "${cmpd}_${curn}_${actionwords// /_}.d12"
+        #  -t "$tmpln"
         cd ..
     done
 done

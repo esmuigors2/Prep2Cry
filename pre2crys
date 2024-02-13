@@ -1,18 +1,33 @@
 #!/bin/bash
 
-[ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl"
+[ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl/tmpls"
 [ -z "$CRYVAR_BSDIR" ] && CRYVAR_BSDIR="$HOME/crydarba/tmpl/basis"
 [ -z "$CRYVAR_FXLDIR" ] && CRYVAR_FXLDIR="$HOME/crydarba/tmpl/fxnls"
 
 echo "=== Call: $0 $@"
-comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""; template=""; helpme=false
-while getopts "hc:g:l:n:w:b:d:t:" myopts; do
+comment=""; spcgrp=0; latcon=""; numel=0; wypos=""; dfa=""; basis=""
+template="tmpl_all"
+helpme=false
+structype="c" # default is crystal
+hexromb="h" # default is hexagonal cell for rhombohedric crystals
+geoactn="s" # default geometry action is nothing
+frqo="" # default frequency action is nothing
+freqoptns="" # the long version
+popan="" # default: no population analysis
+grid="XLGRID" # default grid
+while getopts "hc:g:l:n:w:b:d:t:s:xa:f:pr:" myopts; do
     case $myopts in
     c) comment="$OPTARG"; ;;
     g) spcgrp="$OPTARG"; ;;
+    s) structype="$OPTARG"; ;;
+    x) hexromb="r"; ;;
     l) latcon="$OPTARG"; ;;
     n) numel="$OPTARG"; ;;
     w) wypos="$OPTARG"; ;;
+    a) geoactn="$OPTARG"; ;;
+    f) frqo="$OPTARG"; ;;
+    p) popan="PPAN"; ;;
+    r) grid="$OPTARG"; ;;
     d) dfa="$OPTARG"; ;;
     b) basis="${OPTARG%.bas}"; ;;
     t) template="${OPTARG%.d12}"; ;;
@@ -25,8 +40,15 @@ outfile="${1%.d12}.d12"
 [ -z "$outfile" ] && helpme=true
 #echo "DEBUG: comment is: $comment"
 
+if [ -n "$frqo" ]; then
+    [ -n "$(echo "$frqo" | grep "i")" ] && freqoptns="INTENS#${freqoptns}"
+    [ -n "$(echo "$frqo" | grep "r")" ] && freqoptns="INTRAMAN#${freqoptns}"
+    [ -n "$(echo "$frqo" | grep "d")" ] && freqoptns="DISPERSION#${freqoptns}"
+    [ -n "$(echo "$frqo" | grep "p")" ] && freqoptns="PDOS#${freqoptns}"
+fi
+
 if ($helpme); then
-    echo -e "Usage: pre2crys [-c "COMMENT"] -g SPACEGROUP -l LATTICE_CONSTANT -n NUMBER_OF_ELEMENTS -w WYKOFF_POSITIONS_LINE -d DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE -b BASIS_SET_NAME -t TEMPLATE_NAME INPUT_FILE_NAME\n\nIn WYKOFF_POSITIONS_LINE and DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE (if neccessary) the newlines should be replaced with hashes (#)."
+    echo -e "Usage: pre2crys [-c "COMMENT"] -g SPACEGROUP -l LATTICE_CONSTANTS_LINE -n NUMBER_OF_ELEMENTS -w WYKOFF_POSITIONS_LINE -d DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE -b BASIS_SET_NAME -t TEMPLATE_NAME INPUT_FILE_NAME\n\nIn WYKOFF_POSITIONS_LINE, LATTICE_CONSTANTS_LINE and DENSITY_FUNCTIONAL_APPROXIMATION_TO_USE (if neccessary) the newlines should be replaced with hashes (#)."
     echo -e "We also expect the following environmental variables to be non-empty:\n\tCRYVAR_TMPLDIR\t: where the template file is\n\tCRYVAR_BSDIR\t: where the basis sets are (grouped in folders for each element, e.g. folders Ca F K in which we have files TZVP.bas etc.)\n\tCRYVAR_FXLDIR\t: where non-standard functionals are (files like PW1PW20HF.fxl which contain lines defining them in input -- see CRYSTAL manual)"
     echo -e "If the comment is not given, it is prompted for; if the answer to that prompt is pressing 'Enter', the comment is made from the FILENAME + FUNCTIONAL + BASIS_SET"
     exit 0
@@ -34,9 +56,67 @@ fi
 
 [ ! -f "$CRYVAR_TMPLDIR/${template}.d12" ] && [ ! -L "$CRYVAR_TMPLDIR/${template}.d12" ] && echo "Cannot find the template input file ${template}!" && exit 2
 cp "$CRYVAR_TMPLDIR/${template}.d12" "./${outfile}"
+
+# Now the process of compiling the template begins
+if [ -n "$(grep '^++GSPEC' "./${outfile}")" ]; then
+    case "$structype" in
+        "c")
+            sed -i '/^++GSPEC/r '"$CRYVAR_TMPLDIR/t-gspec-c" "./${outfile}"
+            sed -i '/^++GSPEC/d' "./${outfile}"
+            if [ "$spcgrp" -gt 142 ] && [ "$spcgrp" -lt 168 ]; then # rhombohedric crystal can also be viewed as hexagonal, also with 2 parameters (a and c)
+                if [ "$hexromb" == "r" ]; then
+                    sed -i '/^CRYSTAL/,+1s@\([01] \)[01]\( [0-9]\)@\11\2@' "./${outfile}"
+                else
+                    sed -i '/^CRYSTAL/,+1s@\([01] \)[01]\( [0-9]\)@\10\2@' "./${outfile}"
+                fi
+            fi
+            ;;
+        "e")
+            sed -i '/^++GSPEC/r '"$CRYVAR_TMPLDIR/t-gspec-e" "./${outfile}"
+            sed -i '/^++GSPEC/d' "./${outfile}"
+            ;;
+        "m")
+            sed -i '/^++GSPEC/r '"$CRYVAR_TMPLDIR/t-gspec-m" "./${outfile}"
+            sed -i '/^++GSPEC/d' "./${outfile}"
+            ;;
+    esac
+fi
+if [ -n "$(grep '^++GOPTO' "./${outfile}")" ]; then
+    sed -i '/^++GOPTO/r '"$CRYVAR_TMPLDIR/t-gopto-a" "./${outfile}"
+    sed -i '/^++GOPTO/d' "./${outfile}"
+fi
+if [ -n "$(grep '^++GOPTI' "./${outfile}")" ]; then
+    #if [ "$geoactn" == "s" ]; then # do nothing
+    if [ "$geoactn" == "o" ]; then
+        sed -i '/^++GOPTI/r '"$CRYVAR_TMPLDIR/t-gopti-o" "./${outfile}"
+    elif [ "$geoactn" == "f" ]; then
+        sed -i '/^++GOPTI/r '"$CRYVAR_TMPLDIR/t-gopti-f" "./${outfile}"
+        [ -n "${freqoptns%#}" ] && sed -i 's@==FREQOPT@&\n'"${freqoptns%#}"'@;/==FREQOPT/,/^END/s@#@\n@g' "./${outfile}"
+        sed -i '/^==FREQOPT/d' "./${outfile}"
+    elif [ "$geoactn" == "e" ]; then
+        sed -i '/^++GOPTI/r '"$CRYVAR_TMPLDIR/t-gopti-e" "./${outfile}"
+    fi
+    sed -i '/^++GOPTI/d' "./${outfile}"
+fi
+if [ -n "$(grep '^++HAMPRS' "./${outfile}")" ]; then
+    sed -i '/^++HAMPRS/r '"$CRYVAR_TMPLDIR/t-hamprs-a" "./${outfile}"
+    sed -i '/^++HAMPRS/d' "./${outfile}"
+fi
+if [ -n "$(grep '^++SCFPRS' "./${outfile}")" ]; then
+    sed -i '/^++SCFPRS/r '"$CRYVAR_TMPLDIR/t-scfprs-a" "./${outfile}"
+    sed -i '/^++SCFPRS/d' "./${outfile}"
+    [ -n "$popan" ] && sed -i 's@==POSTSCF@&\n'"${popan}"'@' "./${outfile}"
+    sed -i '/^==POSTSCF/d' "./${outfile}"
+fi
+
+# Now we are working with the template
+
+# Special case of Hartree-Fock
 if [ "$(echo "${dfa}" | sed 's@^\(R\|U\)@@')" == 'HF' ]; then
     sed -i '/^DFT/,/^END/d' "./${outfile}"
 fi
+
+# Starting work with the basis set
 mv "./${outfile}" "./${outfile}.tmp"
 
 ecpcheckf="/tmp/whetherecp.$$"
@@ -94,12 +174,15 @@ if [ -f "$selbasf" ]; then
     rm "$selbasf"
 fi
 [ -f "$curselbasf" ] && rm "$curselbasf"
+# Concluded work with the basis set
 
 [ -z "$comment" ] && read -p "Please enter the comment/human-readable info about this job:   " comment
 [ -z "$comment" ] && comment="${outfile%.d12} ${template%.d12} $dfa $basis $curselbas"
 
 
 [ ! -f "./${outfile}" ] && exit 3
+
+# Starting work with the Wykoff positions
 wypos2="#${wypos%\#}"
 for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
     kfef="$(sed -n "$yu"'p' "$ecpcheckf")"
@@ -118,6 +201,7 @@ rm "$ecpcheckf"
 # DEBUG: echo "$wypos2"
 wypos="${wypos2//%/\#}" # to enable correct formatting in vim
 
+# Completing the substitutions in the template
 sed -n '/==BASIS/,$p' "./${outfile}.tmp" | sed '1d' >> "./${outfile}"
 rm "./${outfile}.tmp"
 
@@ -127,6 +211,7 @@ sed -i 's@==LATCON@&'"$latcon"'@' "./${outfile}"
 sed -i 's@==NUMEL@'"$numel"'@' "./${outfile}"
 sed -i 's@==LISTWYKOFF@&'"${wypos#\\\#}"'@' "./${outfile}"
 sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
+sed -i 's@==GRID@'"$grid"'@' "./${outfile}"
 # DEBUG: grep '==LISTWYKOFF' "./${outfile}"
 
 sed -i '/==LATCON/s@#@\n@g;s/==LATCON//' "./${outfile}"
