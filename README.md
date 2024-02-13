@@ -9,6 +9,21 @@
     * auxillary file **.pertanu** -- a list of all elements, with the line number being the element number
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
+    * an **required directory** of templates for calculations
+
+## Changes since version 1
+The update was quite significant:
+* introduced support for all 7 crystal systems, not just the cubic one;
+* introduced support for other calculation types than geometry optimization;
+* introduced specifications for multiple parameters and the density grid.
+
+Changes on practical level:
+* a new directory `tmpls` with templates;
+* accordingly, the default values for the environmental variable `CRYVAR_TMPLDIR` has changed;
+* many new and REQUIRED options when running `pre2crys`;
+* no prompt for template when running `cryalot`;
+* `cryalot` now prompts for several more things;
+* but these prompts can be escaped if You use command-line arguments for `cryalot`.
 
 ## Where to place the scripts and the directories
 The scripts shold be in `$HOME/bin` or in any other directory You added to Your `$PATH`. prep2cry.sh should be on the machine You are viewing the CIF files (hereinafter called the 'client' or 'local machine'); all the other scripts must be on the machine You are using for calculations (hereinafter called the 'server').
@@ -80,7 +95,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
          - m means a molecule (NOT IMPLEMENTED YET);
          - e means that the geometry will be obtained from a NAME.gui or fort.34 file **which must be manually placed in the directory prepared by the script**.
        
-     - -x specifies, for a rhombohedric lattice, cell of which syngony will be used in the calculation (the default is hexagonal):
+     - -x specifies, for a rhombohedric lattice, cell of which crystal system will be used in the calculation (the default is hexagonal):
          - r means to use the non-default rhombohedral cell;
          - h means to use the default hexagonal cell.
        
@@ -161,12 +176,12 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
    * And so it will prepare separate folders with the corresponding input files.
-   * **NOTE OF EFFICIENCY** You can use command-line arguments for cryalot to facilitate selection of calculation type and parameters.
-       - For example, to run a frequency calculation (-a f) with intensities (-f i) on a crystal (-s c) with Mulliken analysis (-p), run:
-    
-         cryalot -s c -a f -f i -p
+   * **NOTE OF EFFICIENCY** You can use command-line arguments for `cryalot` to facilitate selection of calculation type and parameters.
+       - For example, to run a frequency calculation (`-a f`) with intensities (`-f i`) on a crystal (`-s c`) with Mulliken analysis (`-p`), run:
+     
+                cryalot -s c -a f -f i -p
 
-       - All options are the same as for pre2crys script (see above), but not all command-line options for pre2crys are supported in cryalot.
+       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`.
 7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
