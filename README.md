@@ -142,7 +142,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
        4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.);
        5. Whether Mulliken population analysis will be run in the end of calculation;
-       6. Which density grid should be used (if You press `Enter`, XLGRID will be used);
+       6. Which density grid should be used (if You just press `Enter`, XLGRID will be used);
        7. The list of all functionals You want to use, separated by space; e.g.,
      
                PBE0 B3LYP PW1PW20hf
