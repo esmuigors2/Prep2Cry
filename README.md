@@ -1,4 +1,4 @@
-# Prep2Cry: a set of scripts to prepare CRYSTAL input files en masse (and other helpers)
+# Prep2Cry: a set of scripts to prepare CRYSTAL input files en masse (and other helpers) – version 2!
 ## What it contains?
 * client-side script **prep2cry.sh** to extract data from a CIF file
 * server-side scripts and templates:
@@ -21,15 +21,15 @@ You can [download all the main branch as an archive](https://github.com/esmuigor
 
 ## Environmental variables
 The scripts intended to run on the 'server' rely on three environmental variables:
-  1. `CRYVAR_TMPLDIR`  -- the directory containing template files, such as tmpl_opt.d12 (if empty, defaults to `$HOME/crydarba/tmpl`)
+  1. `CRYVAR_TMPLDIR`  -- the directory containing template files, such as tmpl_opt.d12 (if empty, defaults to `$HOME/crydarba/tmpl/tmpls`)
   2. `CRYVAR_BSDIR` -- the directory containing the directories with basis sets (if empty, defaults to `$HOME/crydarba/tmpl/basis`)
   3. `CRYVAR_FXLDIR` -- the directory containing the custom functionals, defined as they would be in the input file (if empty, defaults to `$HOME/crydarba/tmpl/fxnls`)
 
 You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust directory paths to Your situation, i.e., where did You extract those files to):
 
-     CRYVAR_TMPLDIR="$HOME/cryda/tmpl"
+     CRYVAR_TMPLDIR="$HOME/cryda/tmpl/tmpls"
      CRYVAR_BSDIR="$HOME/cryda/tmpl/basis"
-     CRYVAR_FXLDIR="$HOME/cryda/tmpl"
+     CRYVAR_FXLDIR="$HOME/cryda/tmpl/fxnls"
      export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
 
 ## Usual workflow
@@ -60,7 +60,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
 4. If You only want to prepare a single file AND You are comfortable with using bash scripts:
    * copy the output of `prep2cry.sh` (as shown before) and add the parts in bold:
      
-     <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-d PBE0 -b pob_tzvp_2012 -t tmpl_opt CaF2_tzvp2018_PBE0_opt.d12</b></pre>
+     <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-s c -a f -f 0 -px -g XXLGRID -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12</b></pre>
      
      Here,
      - -d option gives the DFA (density functional approximation) used;
@@ -75,8 +75,33 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        * find the missing basis set and repeat the run of pre2crys;
        * make a symbolic link, named after the basis set missing, which points to some basis set actually present for the element in question
        
-     - -t specifies the template to use, `tmpl_opt` corresponds to `$CRYVAR_TMPLDIR/tmpl_opt.bas`; in this example we have a template for geometry optimization
-     - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce
+     - -s specifies the type of input geometry:
+         - c means a crystal;
+         - m means a molecule (NOT IMPLEMENTED YET);
+         - e means that the geometry will be obtained from a NAME.gui or fort.34 file **which must be manually placed in the directory prepared by the script**.
+       
+     - -x specifies, for a rhombohedric lattice, cell of which syngony will be used in the calculation (the default is hexagonal):
+         - r means to use the non-default rhombohedral cell;
+         - h means to use the default hexagonal cell.
+       
+     - -a specifies the action, a calculation to perform:
+         - s means just an energy calculation (single point);
+         - o means a geometry optimization;
+         - f means a calculation of phonon frequencies;
+         - e means a calculation of elastic constants.
+       
+     - -f specifies options for the frequency/phonon calculations:
+         - i means we need to calculate IR (infrared) intensities as well
+         - r means we need to calculate Raman intensities as well;
+         - d means we need to calculate phonon dispersion as well (NOT IMPLEMENTED YET);
+         - e means we need to calculate phonon density of states as well (NOT IMPLEMENTED YET);
+         - 0 means no additional calculations will be run except for frequency modes (**REQUIRED IF NO OTHER OPTION IS SELECTED**).
+           
+     - -r option gives the density grid used;
+           
+     - -p option requests a Mulliken population analysis to be run after the wave function is calculated;
+       
+     - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce.
    * press `Enter` to launch this command
    * The script will ask for the comment to be put into the first line of the new input file. Please put something meaningful in here, to be able later to understand what in the world did You calcualte.
    
