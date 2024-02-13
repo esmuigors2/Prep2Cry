@@ -9,7 +9,7 @@
     * auxillary file **.pertanu** -- a list of all elements, with the line number being the element number
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
-    * an **required directory** of templates for calculations
+    * a **required directory** of templates for calculations
 
 ## Changes since version 1
 The update was quite significant:
