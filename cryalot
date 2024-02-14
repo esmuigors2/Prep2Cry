@@ -125,7 +125,7 @@ for un in $fxnls; do
         [ -n "$grid" ] && [ "$grid" != "0" ] && choices="$choices -r $grid" || grid="XLGRID"
         actionwords="$(echo "$actionwords" | sed 's@^ @@;s@ $@@')"
 
-        mkdir "$curn"
+        [ ! -d "$curn" ] && mkdir "$curn" || echo -e "Directory already present, \e[31mmake sure it doesn't contain any conflicting files\e[0m..."
         cd "$curn"
         echo -e "\n" | eval "$pcryln $choices" -d "$unn" -b "$eun" -c "\"${cmpd} ${actionwords} ${grid} $un $eun $curselbas\"" "${cmpd}_${curn}_${actionwords// /_}.d12"
         #  -t "$tmpln"
