@@ -1,4 +1,4 @@
-# Prep2Cry: a set of scripts to prepare CRYSTAL input files en masse (and other helpers)
+# Prep2Cry: a set of scripts to prepare CRYSTAL input files en masse (and other helpers) – version 2!
 ## What it contains?
 * client-side script **prep2cry.sh** to extract data from a CIF file
 * server-side scripts and templates:
@@ -9,6 +9,21 @@
     * auxillary file **.pertanu** -- a list of all elements, with the line number being the element number
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
+    * a **required directory** of templates for calculations
+
+## Changes since version 1
+The update was quite significant:
+* introduced support for all 7 crystal systems, not just the cubic one;
+* introduced support for other calculation types than geometry optimization;
+* introduced specifications for multiple parameters and the density grid.
+
+Changes on practical level:
+* a new directory `tmpls` with templates;
+* accordingly, the default values for the environmental variable `CRYVAR_TMPLDIR` has changed;
+* many new and REQUIRED options when running `pre2crys`;
+* no prompt for template when running `cryalot`;
+* `cryalot` now prompts for several more things;
+* but these prompts can be escaped if You use command-line arguments for `cryalot`.
 
 ## Where to place the scripts and the directories
 The scripts shold be in `$HOME/bin` or in any other directory You added to Your `$PATH`. prep2cry.sh should be on the machine You are viewing the CIF files (hereinafter called the 'client' or 'local machine'); all the other scripts must be on the machine You are using for calculations (hereinafter called the 'server').
@@ -21,15 +36,15 @@ You can [download all the main branch as an archive](https://github.com/esmuigor
 
 ## Environmental variables
 The scripts intended to run on the 'server' rely on three environmental variables:
-  1. `CRYVAR_TMPLDIR`  -- the directory containing template files, such as tmpl_opt.d12 (if empty, defaults to `$HOME/crydarba/tmpl`)
+  1. `CRYVAR_TMPLDIR`  -- the directory containing template files, such as tmpl_opt.d12 (if empty, defaults to `$HOME/crydarba/tmpl/tmpls`)
   2. `CRYVAR_BSDIR` -- the directory containing the directories with basis sets (if empty, defaults to `$HOME/crydarba/tmpl/basis`)
   3. `CRYVAR_FXLDIR` -- the directory containing the custom functionals, defined as they would be in the input file (if empty, defaults to `$HOME/crydarba/tmpl/fxnls`)
 
 You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust directory paths to Your situation, i.e., where did You extract those files to):
 
-     CRYVAR_TMPLDIR="$HOME/cryda/tmpl"
+     CRYVAR_TMPLDIR="$HOME/cryda/tmpl/tmpls"
      CRYVAR_BSDIR="$HOME/cryda/tmpl/basis"
-     CRYVAR_FXLDIR="$HOME/cryda/tmpl"
+     CRYVAR_FXLDIR="$HOME/cryda/tmpl/fxnls"
      export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
 
 ## Usual workflow
@@ -60,7 +75,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
 4. If You only want to prepare a single file AND You are comfortable with using bash scripts:
    * copy the output of `prep2cry.sh` (as shown before) and add the parts in bold:
      
-     <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-d PBE0 -b pob_tzvp_2012 -t tmpl_opt CaF2_tzvp2018_PBE0_opt.d12</b></pre>
+     <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-s c -a f -f 0 -px -g XXLGRID -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12</b></pre>
      
      Here,
      - -d option gives the DFA (density functional approximation) used;
@@ -75,8 +90,33 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        * find the missing basis set and repeat the run of pre2crys;
        * make a symbolic link, named after the basis set missing, which points to some basis set actually present for the element in question
        
-     - -t specifies the template to use, `tmpl_opt` corresponds to `$CRYVAR_TMPLDIR/tmpl_opt.bas`; in this example we have a template for geometry optimization
-     - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce
+     - -s specifies the type of input geometry:
+         - c means a crystal;
+         - m means a molecule (NOT IMPLEMENTED YET);
+         - e means that the geometry will be obtained from a NAME.gui or fort.34 file **which must be manually placed in the directory prepared by the script**.
+       
+     - -x specifies, for a rhombohedric lattice, cell of which crystal system will be used in the calculation (the default is hexagonal):
+         - r means to use the non-default rhombohedral cell;
+         - h means to use the default hexagonal cell.
+       
+     - -a specifies the action, a calculation to perform:
+         - s means just an energy calculation (single point);
+         - o means a geometry optimization;
+         - f means a calculation of phonon frequencies;
+         - e means a calculation of elastic constants.
+       
+     - -f specifies options for the frequency/phonon calculations:
+         - i means we need to calculate IR (infrared) intensities as well
+         - r means we need to calculate Raman intensities as well;
+         - d means we need to calculate phonon dispersion as well (NOT IMPLEMENTED YET);
+         - e means we need to calculate phonon density of states as well (NOT IMPLEMENTED YET);
+         - 0 means no additional calculations will be run except for frequency modes (**REQUIRED IF NO OTHER OPTION IS SELECTED**).
+           
+     - -r option gives the density grid used;
+           
+     - -p option requests a Mulliken population analysis to be run after the wave function is calculated;
+       
+     - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce.
    * press `Enter` to launch this command
    * The script will ask for the comment to be put into the first line of the new input file. Please put something meaningful in here, to be able later to understand what in the world did You calcualte.
    
@@ -97,9 +137,13 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
             cryalot
     
    * it will prompt You for:
-       1. The compound name (to use in the filenames and cooment lines in input files)
-       2. The template name (e.g., `tmpl_opt` for geometry optimizations -- found in file `$CRYVAR_TMPLDIR/tmpl_opt.bas`)
-       3. The list of all functionals You want to use, separated by space; e.g.,
+       1. The compound name (to use in the filenames and cooment lines in input files);
+       2. The type of geometry used in this calculation (crystal, molecule or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
+       3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
+       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.);
+       5. Whether Mulliken population analysis will be run in the end of calculation;
+       6. Which density grid should be used (if You just press `Enter`, XLGRID will be used);
+       7. The list of all functionals You want to use, separated by space; e.g.,
      
                PBE0 B3LYP PW1PW20hf
           
@@ -108,7 +152,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
           But `PW1PW20hf` is a custom-defined functional, which means it must have a file under `$CRYVAR_FXLDIR` , like `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
           
           The script cryalot will automatically distinguish between the two (if a file is found, it will use that; otherwise it will asume CRYSTAL knows this functional).
-       4. The list of all basis sets You want to use, separated by space; e.g.,
+       8. The list of all basis sets You want to use, separated by space; e.g.,
           
                pob_tzvp_2012 pob_tzvp_rev2
           
@@ -127,11 +171,17 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
           If this was done in the right way, now You should proceed as follows:
              1. At the prompt of list of basis sets, enter some words not actually corresponding to any basis set (e.g., "haha hihi" for two different setups of site-specific basis sets).
              2. Now You should be prompted for the basis set separately for each site.
-       6. The semi-finished line from prep2cry.sh, e.g.
+       9. The semi-finished line from prep2cry.sh, e.g.
           
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           
    * And so it will prepare separate folders with the corresponding input files.
+   * **NOTE OF EFFICIENCY** You can use command-line arguments for `cryalot` to facilitate selection of calculation type and parameters.
+       - For example, to run a frequency calculation (`-a f`) with intensities (`-f i`) on a crystal (`-s c`) with Mulliken analysis (`-p`), run:
+     
+                cryalot -s c -a f -f i -p
+
+       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`.
 7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
