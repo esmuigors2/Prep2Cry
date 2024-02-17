@@ -106,7 +106,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
          - f means a calculation of phonon frequencies;
          - e means a calculation of elastic constants.
        
-     - -f specifies options for the frequency/phonon calculations:
+     - -f (_use is optional even with -a f_) specifies options for the frequency/phonon calculations:
          - i means we need to calculate IR (infrared) intensities as well
          - r means we need to calculate Raman intensities as well;
          - d means we need to calculate phonon dispersion as well (NOT IMPLEMENTED YET);
@@ -141,7 +141,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        1. The compound name (to use in the filenames and cooment lines in input files);
        2. The type of geometry used in this calculation (crystal, molecule or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
        3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
-       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.);
+       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.) – You can just press `Enter` for none;
        5. Whether Mulliken population analysis will be run in the end of calculation;
        6. Which density grid should be used (if You just press `Enter`, XLGRID will be used);
        7. The list of all functionals You want to use, separated by space; e.g.,
