@@ -6,6 +6,7 @@
     * **cryalot**                 -- create a batch of input files with certain funcional and basis set combinations
     * **cry1**                    -- prepare files `machines.LINUX` and `nodes.par` for a launch on a single node
     * **fxnl2cry.sh**             -- make the functional definition into a parameter to `pre2crys`
+    * **gui2cry.sh**              -- get the element list and group from .GUI file if EXTERNAL geometry is used in `pre2crys`
     * auxillary file **.pertanu** -- a list of all elements, with the line number being the element number
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
@@ -48,7 +49,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
 
 ## Usual workflow
-1. On the machine containing the CIF file launch:
+1. (If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF file** launch:
    
         prep2cry.sh CIFNAME.cif
    
@@ -73,7 +74,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
 2. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
 3. Then continue with **either** 4. or 5.
 4. If You only want to prepare a single file AND You are comfortable with using bash scripts:
-   * copy the output of `prep2cry.sh` (as shown before) and add the parts in bold:
+   * copy the output of `prep2cry.sh` (as shown before) or `gui2cry.sh` (use and results are the same, except that the results won't have the lattice constants) _and add the parts in bold_:
      
      <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-s c -a f -f 0 -px -g XXLGRID -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12</b></pre>
      
@@ -105,7 +106,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
          - f means a calculation of phonon frequencies;
          - e means a calculation of elastic constants.
        
-     - -f specifies options for the frequency/phonon calculations:
+     - -f (_use is optional even with -a f_) specifies options for the frequency/phonon calculations:
          - i means we need to calculate IR (infrared) intensities as well
          - r means we need to calculate Raman intensities as well;
          - d means we need to calculate phonon dispersion as well (NOT IMPLEMENTED YET);
@@ -140,7 +141,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        1. The compound name (to use in the filenames and cooment lines in input files);
        2. The type of geometry used in this calculation (crystal, molecule or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
        3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
-       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.);
+       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.) – You can just press `Enter` for none;
        5. Whether Mulliken population analysis will be run in the end of calculation;
        6. Which density grid should be used (if You just press `Enter`, XLGRID will be used);
        7. The list of all functionals You want to use, separated by space; e.g.,
@@ -171,7 +172,7 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
           If this was done in the right way, now You should proceed as follows:
              1. At the prompt of list of basis sets, enter some words not actually corresponding to any basis set (e.g., "haha hihi" for two different setups of site-specific basis sets).
              2. Now You should be prompted for the basis set separately for each site.
-       9. The semi-finished line from prep2cry.sh, e.g.
+       9. (If You are not using EXTERNAL geometry and the .GUI file is present,) paste the semi-finished line from `prep2cry.sh` or `gui2cry.sh`, e.g.
           
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
           

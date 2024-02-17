@@ -47,7 +47,26 @@ if [ "$grid" == "0" ]; then
 fi
 read -p "Please input all the functionals You want to use, separating names with a space:  " fxnls
 read -p "Please input all the basis sets You want to use, separating names with a space:  " bases
-read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
+doreadcif=1
+if [ "$struc" == "2" ] || [ "$struc" == "e" ]; then
+    ffunc=($fxnls); ffunc=${ffunc[0]}
+    fbs=($bases); fbs=${fbs[0]}
+    if [ -d "${ffunc}.${fbs}" ] || [ -d "${ffunc}_${fbs/_/}" ]; then # 2nd option is backward compatibility
+        direc="$(ls | grep -e "${ffunc}.${fbs}" -e "${ffunc}_${fbs/_/}" | head -1)"
+        if [ -n "$(ls ${direc} | grep gui)" ]; then
+            doreadcif=0
+        else
+            echo -e "\e[31mThe directories were found but not the GUI files! You still need to provide us some parameters from the .CIF file!\e[0m"
+        fi
+    else
+        echo -e "\e[31mWe were unable to find the .GUI file, so You still need to provide us some parameters from the .CIF file!\e[0m"
+    fi
+fi
+if [ "$doreadcif" -eq 1 ]; then
+    read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
+else
+    pcryln="$(gui2cry.sh "$(find ${direc} -name '*gui')")"
+fi
 grupa="$(echo "$pcryln" | grep -o -e '-g [0-9]\+' | sed 's@-g @@')"
 if [ "$grupa" -gt 142 ] && [ "$grupa" -lt 168 ] && [ "$hexag" == "0" ]; then
     echo -e "Please select whether You want use:\n   (1) hexagonal or\n   (2) rhombohedric cell."
@@ -82,7 +101,8 @@ for un in $fxnls; do
         else
             unn="$un"
         fi
-        curn="${un}_${eun/_/}"
+        curn="${un}.${eun}"
+        [ -d "${un}_${eun/_/}" ] && curn="${un}_${eun/_/}"
 
         choices=""
         case "$struc" in
