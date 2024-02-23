@@ -126,12 +126,19 @@ selbasf="/tmp/selbas.$$"
 touch "$selbasf"
 sed -n '1,/==BASIS/p' "./${outfile}.tmp" | sed '$d' > "./${outfile}"
 curselbas=""
-echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do
-    iun="$un"; prefun=""
+if [ "$wypos" == "ext" ]; then
+    wypos="$(cat /tmp/pre2crys.ext | sed 's@"@@g')"
+fi
+donelsf="/tmp/donels.$$"
+touch "$donelsf"
+echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | while read un; do # sort -u appeared for molecules
+    iun="$un"; prefun=""; donel=0
     if [ "$un" -gt 99 ]; then
         prefun="${un:0:1}"
         iun="${un:1:2}"
     fi
+    [ -n "$(grep "^${un}$" "$donelsf")" ] && donel=7
+    echo "$un" >> "$donelsf"
     el=$(sed -n "${iun}p" $HOME/.pertanu)
     basfile="$CRYVAR_BSDIR/${el}/${basis}.bas"
     if [ ! -f "$basfile" ] && [ ! -L "$basfile" ]; then
@@ -142,23 +149,23 @@ echo "$wypos" | tr -d '"' | sed 's@#@\n@g' | sed '$d' | gawk '{print $1}' | whil
         exit 24 # exits only the subshell of the while loop
     fi
     [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && curselbas="$(cat "$curselbasf" | xargs) ${el}:$(basename $(ls -l "$CRYVAR_BSDIR/${el}/${basis}.bas" | gawk '{print $NF}'))"
-    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && echo ">>> Basis ${el}:${basis} is a link to ${curselbas# }"
+    [ -L "$CRYVAR_BSDIR/${el}/${basis}.bas" ] && [ "$donel" -eq 0 ] && echo ">>> Basis ${el}:${basis} is a link to ${curselbas# }"
     eldef="$(head -1 "$basfile" | grep -o '^[0-9]\+')"
     if [ "${#eldef}" -gt 2 ]; then # Crystal will not consider atoms with Z > 99, using first number for specifying
                                    # either a site-specific BS or a BS with an ECP
         if [ -n "$prefun" ]; then
-            cat "$basfile" | sed '1s@[0-9]@'"$prefun"'@' >> "./${outfile}"
+            [ "$donel" -eq 0 ] && cat "$basfile" | sed '1s@[0-9]@'"$prefun"'@' >> "./${outfile}"
             echo "${prefun}+" >> "$ecpcheckf"
         else
-            cat "$basfile" >> "./${outfile}"
+            [ "$donel" -eq 0 ] && cat "$basfile" >> "./${outfile}"
             echo "${eldef:0:1}" >> "$ecpcheckf" 
         fi
     else
         if [ -n "$prefun" ]; then
-            cat "$basfile" | sed '1s@[0-9]@'"$prefun"'&@' >> "./${outfile}"
+            [ "$donel" -eq 0 ] && cat "$basfile" | sed '1s@[0-9]@'"$prefun"'&@' >> "./${outfile}"
             echo "${prefun}+" >> "$ecpcheckf"
         else
-            cat "$basfile" >> "./${outfile}"
+            [ "$donel" -eq 0 ] && cat "$basfile" >> "./${outfile}"
             echo "0" >> "$ecpcheckf"
         fi
     fi
@@ -209,6 +216,7 @@ sed -i '1s@==COMMENT@'"$comment"'@' "./${outfile}"
 sed -i 's@==GROUP@'"$spcgrp"'@' "./${outfile}"
 sed -i 's@==LATCON@&'"$latcon"'@' "./${outfile}"
 sed -i 's@==NUMEL@'"$numel"'@' "./${outfile}"
+sed -i 's@==LISTXYZ@==LISTWYKOFF@' "./${outfile}"
 sed -i 's@==LISTWYKOFF@&'"${wypos#\\\#}"'@' "./${outfile}"
 sed -i 's@==DFA@&'"${dfa%#}"'@' "./${outfile}"
 sed -i 's@==GRID@'"$grid"'@' "./${outfile}"
