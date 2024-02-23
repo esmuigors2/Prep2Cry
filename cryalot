@@ -64,6 +64,7 @@ if [ "$struc" == "2" ] || [ "$struc" == "e" ]; then
 fi
 if [ "$doreadcif" -eq 1 ]; then
     read -p "Please paste here the line from prep2cry.sh output You got after processing the .CIF file:  " pcryln
+    [ "$pcryln" == "ext" ] && pcryln="pre2crys -g 1 -n 199 -w ext"
 else
     pcryln="$(gui2cry.sh "$(find ${direc} -name '*gui')")"
 fi
@@ -119,6 +120,7 @@ for un in $fxnls; do
         [ "$hexag" == "r" ] || [ "$hexag" == "2" ] && choices="$choices -x"
         case "$action" in
             "1" | "s")
+                actionwords="sp ${actionwords}"
                 ;;
             "2" | "o")
                 choices="$choices -a o"

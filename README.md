@@ -15,6 +15,7 @@
 ## Changes since version 1
 The update was quite significant:
 * introduced support for all 7 crystal systems, not just the cubic one;
+* introduced support for molecules, currently C<sub>1</sub> symmetry only;
 * introduced support for other calculation types than geometry optimization;
 * introduced specifications for multiple parameters and the density grid.
 
@@ -49,21 +50,23 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
 
 ## Usual workflow
-1. (If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF file** launch:
+1. (If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF/XYZ file** launch:
    
-        prep2cry.sh CIFNAME.cif
+        prep2cry.sh CIFNAME.cif      # or:  prep2cry.sh XYZNAME.xyz
    
       This will return the first part of the pre2crys command, containing:
-      - -g : space group (number according to ITC)
-      - -l : lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
+      - -g : space group (number according to ITC) – for molecules, only C<sub>1</sub> is currently supported
+      - -l : for CIF files – lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
       - -n : number of elements in the compound
-      - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates)
+      - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates) – for CIF files; XYZ coordinates of atoms within the molecule – for XYZ files
             
       Like this:
       
             pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
             
       The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
+
+      **Attention!** If the input is longer than 4096 symbols, You will have to modify it later, specifically regarding Wykoff positions
       
       **Site-specific basis sets**
       
@@ -71,9 +74,9 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
       
       **If** You want to define a specific ECP for a site position, please prefix the corresponding atom number with 2, 3, 4, …
 
-2. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
-3. Then continue with **either** 4. or 5.
-4. If You only want to prepare a single file AND You are comfortable with using bash scripts:
+3. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
+4. Then continue with **either** 4. or 5.
+5. If You only want to prepare a single file AND You are comfortable with using bash scripts:
    * copy the output of `prep2cry.sh` (as shown before) or `gui2cry.sh` (use and results are the same, except that the results won't have the lattice constants) _and add the parts in bold_:
      
      <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-s c -a f -f 0 -px -g XXLGRID -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12</b></pre>
@@ -118,6 +121,11 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      - -p option requests a Mulliken population analysis to be run after the wave function is calculated;
        
      - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce.
+     - If the input line is longer than 4096 characters, You will need to paste all the Wykoff coordinates into a file /tmp/pre2crys.ext and replace them in the command with the word "ext".
+
+       Like this:
+
+           pre2crys -g 1 -n 199 -w ext
    * press `Enter` to launch this command
    * The script will ask for the comment to be put into the first line of the new input file. Please put something meaningful in here, to be able later to understand what in the world did You calcualte.
    
@@ -175,6 +183,12 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        9. (If You are not using EXTERNAL geometry and the .GUI file is present,) paste the semi-finished line from `prep2cry.sh` or `gui2cry.sh`, e.g.
           
               pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
+
+          If the input line is longer than 4096 characters (typically with molecules or nanoparticles), You will need to paste all the Wykoff coordinates into a file /tmp/pre2crys.ext and replace them in the command with the word "ext".
+
+          Like this:
+
+              pre2crys -g 1 -n 199 -w ext
           
    * And so it will prepare separate folders with the corresponding input files.
    * **NOTE OF EFFICIENCY** You can use command-line arguments for `cryalot` to facilitate selection of calculation type and parameters.
