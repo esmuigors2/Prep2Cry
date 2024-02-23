@@ -15,6 +15,7 @@
 ## Changes since version 1
 The update was quite significant:
 * introduced support for all 7 crystal systems, not just the cubic one;
+* introduced support for molecules, currently C<sub>1</sub> symmetry only;
 * introduced support for other calculation types than geometry optimization;
 * introduced specifications for multiple parameters and the density grid.
 
