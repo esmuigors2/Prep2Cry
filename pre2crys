@@ -14,8 +14,9 @@ geoactn="s" # default geometry action is nothing
 frqo="" # default frequency action is nothing
 freqoptns="" # the long version
 popan="" # default: no population analysis
+press=""
 grid="XLGRID" # default grid
-while getopts "hc:g:l:n:w:b:d:t:s:xa:f:pr:" myopts; do
+while getopts "hc:g:l:n:w:b:d:t:s:xa:f:pr:P:" myopts; do
     case $myopts in
     c) comment="$OPTARG"; ;;
     g) spcgrp="$OPTARG"; ;;
@@ -25,6 +26,7 @@ while getopts "hc:g:l:n:w:b:d:t:s:xa:f:pr:" myopts; do
     n) numel="$OPTARG"; ;;
     w) wypos="$OPTARG"; ;;
     a) geoactn="$OPTARG"; ;;
+    P) press="$OPTARG"; ;;
     f) frqo="$OPTARG"; ;;
     p) popan="PPAN"; ;;
     r) grid="$OPTARG"; ;;
@@ -89,12 +91,16 @@ if [ -n "$(grep '^++GOPTI' "./${outfile}")" ]; then
     #if [ "$geoactn" == "s" ]; then # do nothing
     if [ "$geoactn" == "o" ]; then
         sed -i '/^++GOPTI/r '"$CRYVAR_TMPLDIR/t-gopti-o" "./${outfile}"
+        [ -n "${press}" ] && sed -i 's@==PRESSURE@&\nEXTPRESS\n'"${press}"'@' "./${outfile}"
+        sed -i '/^==PRESSURE/d' "./${outfile}"
     elif [ "$geoactn" == "f" ]; then
         sed -i '/^++GOPTI/r '"$CRYVAR_TMPLDIR/t-gopti-f" "./${outfile}"
         [ -n "${freqoptns%#}" ] && sed -i 's@==FREQOPT@&\n'"${freqoptns%#}"'@;/==FREQOPT/,/^END/s@#@\n@g' "./${outfile}"
         sed -i '/^==FREQOPT/d' "./${outfile}"
     elif [ "$geoactn" == "e" ]; then
         sed -i '/^++GOPTI/r '"$CRYVAR_TMPLDIR/t-gopti-e" "./${outfile}"
+        [ -n "${press}" ] && sed -i 's@==PRESSURE@&\nPRESSEOS\n'"${press}"'@' "./${outfile}"
+        sed -i '/^==PRESSURE/d' "./${outfile}"
     fi
     sed -i '/^++GOPTI/d' "./${outfile}"
 fi
@@ -201,7 +207,7 @@ for yu in $(seq 1 $(cat "$ecpcheckf" | wc -l)); do
             wypos2="$(echo "$wypos2" | sed 's@#@%'"$kfef"'@')"
         fi
     else
-        wypos2="${wypos2/\#/%}"
+        wypos2="${wypos2/\#/% }"
     fi
 done
 rm "$ecpcheckf"

@@ -5,22 +5,23 @@
 [ -z "$CRYVAR_TMPLDIR" ] && CRYVAR_TMPLDIR="$HOME/crydarba/tmpl/tmpls"
 
 fxnls=""; bases=""; pcryln=""; cmpd=""; tmpln=""
-struc=0; hexag=0; action=0; freqopts=0; pscf=0; grid="0"
+struc=0; hexag=0; action=0; freqopts=0; pscf=0; grid="0"; press=""
 actionwords=""
 
-while getopts "s:x:a:f:pr:" myopts; do
+while getopts "s:x:a:f:pr:P:" myopts; do
     case $myopts in
     s) struc="$OPTARG"; ;;
     x) hexag="$OPTARG"; ;;
     a) action="$OPTARG"; ;;
     f) freqopts="$OPTARG"; ;;
     p) pscf="y"; ;;
+    P) press="$OPTARG"; ;;
     r) grid="$OPTARG"; ;;
     \?) echo "Some specified options were not recognized. Try pre2crys -h for information about available options."; exit 1 ;; # for cases of "invented" options
     esac
 done
 shift "$((OPTIND-1))"
-[ "${freqopts:0:1}" == "-" ] && echo -e "\033[31mIf You do not wish any calculations about phonons except for modes, You should use option argument 0.\n   Like this: cryalot -a f -f 0 -r XXLGRID\nDo not leave the option -f without an argument!!!\033[0m" && exit 17
+[ "${freqopts:0:1}" == "-" ] && echo -e "\033[31mIf You do not wish any calculations about phonons except for modes, You should either not use -f or use option argument 0.\n   Like this: cryalot -a f -f 0 -r XXLGRID\nDo not leave the option -f without an argument!!!\033[0m" && exit 17
 
 read -p "Please input the compound name:  " cmpd
 if [ "$struc" == "0" ]; then
@@ -37,6 +38,13 @@ fi
 if [ "$action" == "3" ] && [ "$freqopts" == "0" ]; then
     echo -e "Please select options for phonon calculation (input a combination of numbers and press Enter):\n   (1) IR intensities\n   (2) Raman intensities\n   (3) Dispersion\n   (4) Vibrational pDOS"
     read -p "Please give Your choice:  " freqopts
+fi
+if [ "$action" == "2" ] || [ "$action" == "4" ] && [ -z "$press" ]; then
+    read -p "Please input pressure in GPa or hit Enter:  " press
+fi
+inipress="$press"
+if [ "$action" == "2" ] && [ -n "$press" ]; then
+    press=$(gpa2hb3.py -g "$press")
 fi
 if [ "$pscf" == "0" ]; then
     read -n 1 -p "Do You need population analysis? (y/n)   " pscf
@@ -135,6 +143,10 @@ for un in $fxnls; do
                 actionwords="elconst ${actionwords}"
                 ;;
         esac
+        if [ -n "$press" ]; then
+            choices="$choices -P $press"
+            actionwords="${actionwords} Pressure_${inipress}_GPa"
+        fi
         freqchoices=""
         if [ "$freqopts" != "0" ]; then
             [ -n "$(echo "$freqopts" | grep 'i\|1')" ] && freqchoices="${freqchoices}i"
