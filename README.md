@@ -51,33 +51,37 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
 
 ## Usual workflow
-1. (If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF/XYZ file** launch:
+### 1. Structure preparation
+(If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF/XYZ file** launch:
    
         prep2cry.sh CIFNAME.cif      # or:  prep2cry.sh XYZNAME.xyz
    
-      This will return the first part of the pre2crys command, containing:
-      - -g : space group (number according to ITC) – for molecules, only C<sub>1</sub> is currently supported
-      - -l : for CIF files – lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
-      - -n : number of elements in the compound
-      - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates) – for CIF files; XYZ coordinates of atoms within the molecule – for XYZ files
-            
-      Like this:
+This will return the first part of the pre2crys command, containing:
+- -g : space group (number according to ITC) – for molecules, only C<sub>1</sub> is currently supported
+- -l : for CIF files – lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
+- -n : number of elements in the compound
+- -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates) – for CIF files; XYZ coordinates of atoms within the molecule – for XYZ files
       
-            pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
-            
-      The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
+Like this:
 
-      **Attention!** If the input is longer than 4096 symbols, You will have to modify it later, specifically regarding Wykoff positions
+      pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
       
-      **Site-specific basis sets**
-      
-      **If** You want to define specific basis set for a site position, please prefix the corresponding atom number with 1, 10, 100, …
-      
-      **If** You want to define a specific ECP for a site position, please prefix the corresponding atom number with 2, 3, 4, …
+The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
 
-3. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
-4. Then continue with **either** 4. or 5.
-5. If You only want to prepare a single file AND You are comfortable with using bash scripts:
+**Attention!** If the input is longer than 4096 symbols, You will have to modify it later, specifically regarding Wykoff positions
+
+**Site-specific basis sets**
+
+**If** You want to define specific basis set for a site position, please prefix the corresponding atom number with 1, 10, 100, …
+
+**If** You want to define a specific ECP for a site position, please prefix the corresponding atom number with 2, 3, 4, …
+
+### 2. Go to cluster
+Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
+### 3. Select the way of preparation
+Then continue with **either** 4. or 5. If You have no idea, [choose 5](#5-high-level-way).
+### 4. Low-level way
+If You only want to prepare a single file AND You are comfortable with using bash scripts:
    * copy the output of `prep2cry.sh` (as shown before) or `gui2cry.sh` (use and results are the same, except that the results won't have the lattice constants) _and add the parts in bold_:
      
      <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-s c -a f -f 0 -px -g XXLGRID -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12</b></pre>
@@ -145,9 +149,10 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
          fxnl2cry.sh PW1PW20hf
      
      which will search for the definition of that density functional inside the file `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
-6. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
+### 5. High-level way
+👉 If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
 
-   OR if You are not too comfortable with command line:
+👉 OR if You are not too comfortable with command line:
    * launch the following command:
      
             cryalot
@@ -207,7 +212,8 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
                 cryalot -s c -a f -f i -p
 
        - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`.
-7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
+### 6. Pre-launch
+Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
      
@@ -222,10 +228,11 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
 
    **!! IMPORTANT !!** You **will** need to edit **cry1** script to change our local cluster name (`lasc`) to anything You have at home.
-8. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
+### 7. Launch
+Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
 
        nohup runPcry23 20 INPUT_FILE_NAME &> INPUT_FILE_NAME.logc &
 
-9. Enjoy!
+### 8. Enjoy!
 
 End and glory to God.
