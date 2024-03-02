@@ -7,6 +7,7 @@
     * **cry1**                    -- prepare files `machines.LINUX` and `nodes.par` for a launch on a single node
     * **fxnl2cry.sh**             -- make the functional definition into a parameter to `pre2crys`
     * **gui2cry.sh**              -- get the element list and group from .GUI file if EXTERNAL geometry is used in `pre2crys`
+    * **gpa2hb3.py**              -- converts pressure between GPa and atomic units (hartrees per cubic bohr)
     * auxillary file **.pertanu** -- a list of all elements, with the line number being the element number
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
@@ -119,6 +120,12 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      - -r option gives the density grid used;
            
      - -p option requests a Mulliken population analysis to be run after the wave function is calculated;
+           
+     - -P option requests a calculation under hydrostatic pressure; You should provide it in GPa after this option;
+
+       The script will automatically convert GPa to atomic units if needed, using precisely as many significant digits as in the input.
+       
+       Pressures below atmospheric are not supported, though (what a coincidence regarding Python).
        
      - `CaF2_tzvp2018_PBE0_opt.d12` is the name of input file You want to produce.
      - If the input line is longer than 4096 characters, You will need to paste all the Wykoff coordinates into a file /tmp/pre2crys.ext and replace them in the command with the word "ext".
@@ -149,7 +156,10 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        1. The compound name (to use in the filenames and cooment lines in input files);
        2. The type of geometry used in this calculation (crystal, molecule or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
        3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
-       4. If the type selected was "frequency", then additional prompt is for frequancy calculation options (IR or Raman intensities, etc.) – You can just press `Enter` for none;
+       4. If the type selected was "frequency", then additional prompt is for frequency calculation options (IR or Raman intensities, etc.) – You can just press `Enter` for none;
+       4. If the type selected was "geometry optimization" or "elastic constants", then additional prompt is for pressure in GPa to be applied during the calculations – You can just press `Enter` for none;
+     
+          The pressure will be converted from GPa to atomic units if needed, using precisely as many significant digits as in the input.
        5. Whether Mulliken population analysis will be run in the end of calculation;
        6. Which density grid should be used (if You just press `Enter`, XLGRID will be used);
        7. The list of all functionals You want to use, separated by space; e.g.,
