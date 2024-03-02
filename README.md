@@ -99,33 +99,33 @@ If You only want to prepare a single file AND You are comfortable with using bas
        * find the missing basis set and repeat the run of pre2crys;
        * make a symbolic link, named after the basis set missing, which points to some basis set actually present for the element in question
        
-     - -s specifies the type of input geometry:
+     - **-s** specifies the type of input geometry:
          - c means a crystal;
          - m means a molecule (NOT IMPLEMENTED YET);
          - e means that the geometry will be obtained from a NAME.gui or fort.34 file **which must be manually placed in the directory prepared by the script**.
        
-     - -x specifies, for a rhombohedric lattice, cell of which crystal system will be used in the calculation (the default is hexagonal):
+     - **-x** specifies, for a rhombohedric lattice, cell of which crystal system will be used in the calculation (the default is hexagonal):
          - r means to use the non-default rhombohedral cell;
          - h means to use the default hexagonal cell.
        
-     - -a specifies the action, a calculation to perform:
+     - **-a** specifies the action, a calculation to perform:
          - s means just an energy calculation (single point);
          - o means a geometry optimization;
          - f means a calculation of phonon frequencies;
          - e means a calculation of elastic constants.
        
-     - -f (_use is optional even with -a f_) specifies options for the frequency/phonon calculations:
+     - **-f** (_use is optional even with -a f_) specifies options for the frequency/phonon calculations:
          - i means we need to calculate IR (infrared) intensities as well
          - r means we need to calculate Raman intensities as well;
          - d means we need to calculate phonon dispersion as well (NOT IMPLEMENTED YET);
          - e means we need to calculate phonon density of states as well (NOT IMPLEMENTED YET);
          - 0 means no additional calculations will be run except for frequency modes (**REQUIRED IF NO OTHER OPTION IS SELECTED**).
            
-     - -r option gives the density grid used;
+     - **-r** option gives the density grid used;
            
-     - -p option requests a Mulliken population analysis to be run after the wave function is calculated;
+     - **-p** option requests a Mulliken population analysis to be run after the wave function is calculated;
            
-     - -P option requests a calculation under hydrostatic pressure; You should provide it in GPa after this option;
+     - **-P** option requests a calculation under hydrostatic pressure; You should provide it in GPa after this option;
 
        The script will automatically convert GPa to atomic units if needed, using precisely as many significant digits as in the input.
        
@@ -211,7 +211,7 @@ If You only want to prepare a single file AND You are comfortable with using bas
      
                 cryalot -s c -a f -f i -p
 
-       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`.
+       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`. The relevant options are shown in bold in the [description of pre2crys](#5-low-level-way).
 ### 6. Pre-launch
 Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
