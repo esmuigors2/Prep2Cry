@@ -7,6 +7,7 @@
     * **cry1**                    -- prepare files `machines.LINUX` and `nodes.par` for a launch on a single node
     * **fxnl2cry.sh**             -- make the functional definition into a parameter to `pre2crys`
     * **gui2cry.sh**              -- get the element list and group from .GUI file if EXTERNAL geometry is used in `pre2crys`
+    * **gpa2hb3.py**              -- converts pressure between GPa and atomic units (hartrees per cubic bohr)
     * auxillary file **.pertanu** -- a list of all elements, with the line number being the element number
     * an **example directory** of basis sets
     * an **example directory** of "custom" density functionals
