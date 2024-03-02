@@ -211,7 +211,7 @@ If You only want to prepare a single file AND You are comfortable with using bas
      
                 cryalot -s c -a f -f i -p
 
-       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`. The relevant options are shown in bold in the [description of pre2crys](#5-low-level-way).
+       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`. The relevant options are shown in bold in the [description of pre2crys](#4-low-level-way).
 ### 6. Pre-launch
 Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
