@@ -67,7 +67,7 @@ if [ "$actualformat" == "c" ]; then
         elif [ "$numlatcol" -eq 3 ] && [ "$numlata90" -eq 2 ]; then # monoclinic
             latcon='"'"${latcon}#${lbtcon}#${lctcon}#${latconn90}"'"'
         elif [ "$numlatcol" -eq 2 ] && [ "$numlata90" -eq 2 ]; then # hexagonal
-            latcon='"'"${latcon}#${lctcon}#${lgtcon}"'"'
+            latcon='"'"${latcon}#${lctcon}"'"' # we do not need to pass 120, as we have group in separate variable
         elif [ "$numlatcol" -eq 1 ] && [ "$numlatcoa" -eq 1 ]; then # rhombohedral
             latcon='"'"${latcon}#${lltcon}"'"'
         elif [ -z "$latconn90" ]; then

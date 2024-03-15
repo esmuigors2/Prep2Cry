@@ -51,33 +51,37 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      export CRYVAR_FXLDIR CRYVAR_BSDIR CRYVAR_TMPLDIR
 
 ## Usual workflow
-1. (If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF/XYZ file** launch:
+### 1. Structure preparation
+(If You don't have a .GUI file from a previous run of CRYSTAL which would be used, ) **on the machine containing the CIF/XYZ file** launch:
    
         prep2cry.sh CIFNAME.cif      # or:  prep2cry.sh XYZNAME.xyz
    
-      This will return the first part of the pre2crys command, containing:
-      - -g : space group (number according to ITC) – for molecules, only C<sub>1</sub> is currently supported
-      - -l : for CIF files – lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
-      - -n : number of elements in the compound
-      - -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates) – for CIF files; XYZ coordinates of atoms within the molecule – for XYZ files
-            
-      Like this:
+This will return the first part of the pre2crys command, containing:
+- -g : space group (number according to ITC) – for molecules, only C<sub>1</sub> is currently supported
+- -l : for CIF files – lattice constant OR constants separated with number sighns (#); e.g., "a#b#c#α#β#γ" as a general example for triclinic structure, or "8.5732#12.9668#7.2227#90.658#115.917#87.626" for <a href="http://www.crystallography.net/cod/1529639.cif">microcline</a>
+- -n : number of elements in the compound
+- -w : Wyckoff positions of the elements within the cell (fractional XYZ coordinates) – for CIF files; XYZ coordinates of atoms within the molecule – for XYZ files
       
-            pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
-            
-      The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
+Like this:
 
-      **Attention!** If the input is longer than 4096 symbols, You will have to modify it later, specifically regarding Wykoff positions
+      pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#"
       
-      **Site-specific basis sets**
-      
-      **If** You want to define specific basis set for a site position, please prefix the corresponding atom number with 1, 10, 100, …
-      
-      **If** You want to define a specific ECP for a site position, please prefix the corresponding atom number with 2, 3, 4, …
+The Wyckoff positions are given in a single line where the hash substitutes for the newline. Otherwise they are just as in the input file.
 
-3. Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
-4. Then continue with **either** 4. or 5.
-5. If You only want to prepare a single file AND You are comfortable with using bash scripts:
+**Attention!** If the input is longer than 4096 symbols, You will have to modify it later, specifically regarding Wykoff positions
+
+**Site-specific basis sets**
+
+**If** You want to define specific basis set for a site position, please prefix the corresponding atom number with 1, 10, 100, …
+
+**If** You want to define a specific ECP for a site position, please prefix the corresponding atom number with 2, 3, 4, …
+
+### 2. Go to cluster
+Then log in onto Your computational server and make a directory for calculation of Your compound of interest.
+### 3. Select the way of preparation
+Then continue with **either** 4. or 5. If You have no idea, [choose 5](#5-high-level-way).
+### 4. Low-level way
+If You only want to prepare a single file AND You are comfortable with using bash scripts:
    * copy the output of `prep2cry.sh` (as shown before) or `gui2cry.sh` (use and results are the same, except that the results won't have the lattice constants) _and add the parts in bold_:
      
      <pre>pre2crys -g 225 -l 5.463209 -n 2 -w "20 0 0 0#9 0.25 0.25 0.25#" <b>-s c -a f -f 0 -px -g XXLGRID -d PBE0 -b pob_tzvp_2012 CaF2_tzvp2018_PBE0_opt.d12</b></pre>
@@ -95,33 +99,33 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
        * find the missing basis set and repeat the run of pre2crys;
        * make a symbolic link, named after the basis set missing, which points to some basis set actually present for the element in question
        
-     - -s specifies the type of input geometry:
+     - **-s** specifies the type of input geometry:
          - c means a crystal;
          - m means a molecule (NOT IMPLEMENTED YET);
          - e means that the geometry will be obtained from a NAME.gui or fort.34 file **which must be manually placed in the directory prepared by the script**.
        
-     - -x specifies, for a rhombohedric lattice, cell of which crystal system will be used in the calculation (the default is hexagonal):
+     - **-x** specifies, for a rhombohedric lattice, cell of which crystal system will be used in the calculation (the default is hexagonal):
          - r means to use the non-default rhombohedral cell;
          - h means to use the default hexagonal cell.
        
-     - -a specifies the action, a calculation to perform:
+     - **-a** specifies the action, a calculation to perform:
          - s means just an energy calculation (single point);
          - o means a geometry optimization;
          - f means a calculation of phonon frequencies;
          - e means a calculation of elastic constants.
        
-     - -f (_use is optional even with -a f_) specifies options for the frequency/phonon calculations:
+     - **-f** (_use is optional even with -a f_) specifies options for the frequency/phonon calculations:
          - i means we need to calculate IR (infrared) intensities as well
          - r means we need to calculate Raman intensities as well;
          - d means we need to calculate phonon dispersion as well (NOT IMPLEMENTED YET);
          - e means we need to calculate phonon density of states as well (NOT IMPLEMENTED YET);
          - 0 means no additional calculations will be run except for frequency modes (**REQUIRED IF NO OTHER OPTION IS SELECTED**).
            
-     - -r option gives the density grid used;
+     - **-r** option gives the density grid used;
            
-     - -p option requests a Mulliken population analysis to be run after the wave function is calculated;
+     - **-p** option requests a Mulliken population analysis to be run after the wave function is calculated;
            
-     - -P option requests a calculation under hydrostatic pressure; You should provide it in GPa after this option;
+     - **-P** option requests a calculation under hydrostatic pressure; You should provide it in GPa after this option;
 
        The script will automatically convert GPa to atomic units if needed, using precisely as many significant digits as in the input.
        
@@ -145,9 +149,10 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
          fxnl2cry.sh PW1PW20hf
      
      which will search for the definition of that density functional inside the file `$CRYVAR_FXLDIR/PW1PW20hf.fxl` .
-6. If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
+### 5. High-level way
+👉 If You want to prepare a lot of input files, using all combinations of some density functionals and basis sets;
 
-   OR if You are not too comfortable with command line:
+👉 OR if You are not too comfortable with command line:
    * launch the following command:
      
             cryalot
@@ -206,8 +211,9 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
      
                 cryalot -s c -a f -f i -p
 
-       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`.
-7. Then, if You want to only launch the dcalculation on a single node, You can use the command:
+       - All options are the same as for `pre2crys` script (see above), but not all command-line options for pre2crys are supported in `cryalot`. The relevant options are shown in bold in the [description of pre2crys](#4-low-level-way).
+### 6. Pre-launch
+Then, if You want to only launch the dcalculation on a single node, You can use the command:
 
        cry1
      
@@ -222,10 +228,11 @@ You can add to Your $HOME/.bashrc or $HOME/.bash_profile the following (adjust d
    Personally I usually launch multiple jobs on a single node if there are more than 20 cores.
 
    **!! IMPORTANT !!** You **will** need to edit **cry1** script to change our local cluster name (`lasc`) to anything You have at home.
-8. Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
+### 7. Launch
+Launch Your CRYSTAL job as usual (I usually save the output to a .logc file, also less problems with nohup):
 
        nohup runPcry23 20 INPUT_FILE_NAME &> INPUT_FILE_NAME.logc &
 
-9. Enjoy!
+### 8. Enjoy!
 
 End and glory to God.
