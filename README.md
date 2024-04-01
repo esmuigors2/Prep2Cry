@@ -159,7 +159,8 @@ If You only want to prepare a single file AND You are comfortable with using bas
     
    * it will prompt You for:
        1. The compound name (to use in the filenames and cooment lines in input files);
-       2. The type of geometry used in this calculation (crystal, molecule or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
+       2. The type of geometry used in this calculation (crystal or molecule)
+       2. Source of geometry used in calculation (CIF file, see below, or a geometry from an external file NAME.gui or fort.34 **which must be manually placed in the directory prepared by the script**);
        3. The type of calculation You want (single-point energy, geometry optimization, frequency calculation, elastic constant calculation, etc.);
        4. If the type selected was "frequency", then additional prompt is for frequency calculation options (IR or Raman intensities, etc.) – You can just press `Enter` for none;
        4. If the type selected was "geometry optimization" or "elastic constants", then additional prompt is for pressure in GPa to be applied during the calculations – You can just press `Enter` for none;
