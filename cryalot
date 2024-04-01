@@ -6,11 +6,13 @@
 
 fxnls=""; bases=""; pcryln=""; cmpd=""; tmpln=""
 struc=0; hexag=0; action=0; freqopts=0; pscf=0; grid="0"; press=""
+strus=0
 actionwords=""
 
-while getopts "s:x:a:f:pr:P:" myopts; do
+while getopts "s:g:x:a:f:pr:P:" myopts; do
     case $myopts in
-    s) struc="$OPTARG"; ;;
+    g) struc="$OPTARG"; ;;
+    s) strus="$OPTARG"; ;;
     x) hexag="$OPTARG"; ;;
     a) action="$OPTARG"; ;;
     f) freqopts="$OPTARG"; ;;
@@ -25,10 +27,13 @@ shift "$((OPTIND-1))"
 
 read -p "Please input the compound name:  " cmpd
 if [ "$struc" == "0" ]; then
-    echo -e "Please select the type of structure:\n   (1) Crystal\n   (2) External\n   (3) Molecule"
+    echo -e "Please select the type of structure:\n   (1) Crystal\n   (2) Molecule"
     read -n 1 -p "Please give Your choice:  " struc
     echo
-    [ "$struc" == "2" ] || [ "$struc" == "e" ] && echo -e "\033[31mPlease do not forget to place NAME.gui or fort.34 file inside all the directories that will be created now!\033[0m"
+    echo -e "Please select the source of structure:\n   (1) CIF file\n   (2) NAME.gui or fort.34 file"
+    read -n 1 -p "Please give Your choice:  " strus
+    echo
+    [ "$strus" == "2" ] || [ "$struc" == "e" ] && echo -e "\033[31mPlease do not forget to place NAME.gui or fort.34 file inside all the directories that will be created now!\033[0m"
 fi
 if [ "$action" == "0" ]; then
     echo -e "Please select the type of calculation:\n   (1) Energy\n   (2) Geometry optimization\n   (3) Phonons\n   (4) Elastic constants"
@@ -56,7 +61,7 @@ fi
 read -p "Please input all the functionals You want to use, separating names with a space:  " fxnls
 read -p "Please input all the basis sets You want to use, separating names with a space:  " bases
 doreadcif=1
-if [ "$struc" == "2" ] || [ "$struc" == "e" ]; then
+if [ "$strus" == "2" ] || [ "$strus" == "e" ]; then
     ffunc=($fxnls); ffunc=${ffunc[0]}
     fbs=($bases); fbs=${fbs[0]}
     if [ -d "${ffunc}.${fbs}" ] || [ -d "${ffunc}_${fbs/_/}" ]; then # 2nd option is backward compatibility
@@ -114,17 +119,18 @@ for un in $fxnls; do
         [ -d "${un}_${eun/_/}" ] && curn="${un}_${eun/_/}"
 
         choices=""
-        case "$struc" in
-            "1" | "c")
-                choices="$choices -s c"
-                ;;
-            "2" | "e")
-                choices="$choices -s e"
-                ;;
-            "3" | "m")
-                choices="$choices -s m"
-                ;;
-        esac
+        if [ "$strus" == 2 ]; then
+            choices="$choices -s e"
+        else
+            case "$struc" in
+                "1" | "c")
+                    choices="$choices -s c"
+                    ;;
+                "2" | "m")
+                    choices="$choices -s m"
+                    ;;
+            esac
+        fi
         [ "$hexag" == "r" ] || [ "$hexag" == "2" ] && choices="$choices -x"
         case "$action" in
             "1" | "s")
