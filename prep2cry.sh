@@ -26,7 +26,7 @@ if [ "$actualformat" == "c" ]; then
                 unn="$(echo "$un" | sed 's@([0-9]\+)@@g;s@\s\+0\s\+@ 0.0 @g;s@\s0$@ 0.0@g;s@0\.\s@0.0 @g;s@\s0\.$@ 0.0@g;s@\s\.\([0-9]\)@ 0.\1@g')"
                 #echo "%%%%%%%%%%%%%%%%%%%"; echo "$unn"; echo '$$$$$$$$$$$$$$$$$$'
                 echo "$unn" | gawk '{printf "%8.5f  %8.5f  %8.5f\n", $'"$(cat "${verytmpfille}1")"', $'"$(cat "${verytmpfille}2")"', $'"$(cat "${verytmpfille}3")"'}' >> "${tmpfille}.wypos"
-                grep -nm 1 $(echo "$unn" | gawk '{print $'"$(cat "${verytmpfille}0")"'}' | sed 's@[0-9+-]@@g') $HOME/.pertanu | cut -d : -f 1  | gawk '{printf "%-2s\n", $1}' >> "${tmpfille}.wyel"
+                grep -nm 1 -e "$(echo "$unn" | gawk '{print $'"$(cat "${verytmpfille}0")"'}' | sed 's@[0-9+-]@@g')"'\b' $HOME/.pertanu | cut -d : -f 1  | gawk '{printf "%-2s\n", $1}' >> "${tmpfille}.wyel"
             fi
             [ -n "$(echo "$un" | grep '^loop_')" ] && dcnt=0
             [ -n "$(echo "$un" | grep '^_\|^loop_')" ] && [ -f "${verytmpfille}3" ] && [ -f "${tmpfille}.wypos" ] && [ -n "$(cat "${tmpfille}.wypos")" ] && rm ${verytmpfille}[0-3] && break
@@ -87,5 +87,4 @@ else
     rm "${tmpfille}.wytmp"
 fi
 rm "${tmpfille}.wyel" "${tmpfille}.wypos"
-
 
